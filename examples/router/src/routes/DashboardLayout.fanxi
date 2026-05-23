@@ -1,0 +1,10 @@
+function DashboardLayout() {
+  return (
+    <section>
+      <h2>DashboardLayout (persssist1)</h2>
+      <slot />
+    </section>
+  )
+}
+
+export default DashboardLayout

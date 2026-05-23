@@ -1,0 +1,7 @@
+function Clients() {
+  return (
+    <p>Clients page (break out of parent layouts)</p>
+  )
+}
+
+export default Clients

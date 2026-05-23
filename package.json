@@ -1,0 +1,49 @@
+{
+  "name": "fanxipan-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.0.0",
+  "scripts": {
+    "build": "pnpm -r build",
+    "build:core": "pnpm --filter fanxipan-node build && pnpm --filter compiler build && pnpm --filter runtime build && pnpm --filter router build && pnpm --filter fanxipan build && pnpm --filter vite-plugin-fanxipan build",
+    "build:example:basic": "pnpm run build:core && pnpm --filter @examples/basic build",
+    "build:examples": "pnpm run build:core && pnpm --filter @examples/basic build && pnpm --filter @examples/todo build && pnpm --filter @examples/router build && pnpm --filter @examples/playground build && pnpm --filter @examples/ssr build && pnpm --filter @examples/full-fanxipan build",
+    "build:fanxikit:phase1": "pnpm --filter fanxikit build && pnpm --filter fanxikit-vite build && pnpm --filter fanxi-adapter-node build",
+    "build:fanxikit:phase4": "pnpm --filter fanxikit build && pnpm --filter fanxikit-vite build && pnpm --filter fanxi-adapter-node build && pnpm --filter fanxi-adapter-static build && pnpm --filter fanxi-adapter-cloudflare build",
+    "build:fanxikit:phase5": "pnpm --filter fanxikit build && pnpm --filter fanxikit-vite build && pnpm --filter fanxi-adapter-node build && pnpm --filter fanxi-adapter-static build && pnpm --filter fanxi-adapter-cloudflare build && pnpm --filter fanxi-adapter-vercel build && pnpm --filter fanxi-adapter-netlify build",
+    "build:fanxikit": "pnpm run build:fanxikit:phase5 && pnpm --filter @examples/fanxikit build",
+    "test:fanxikit": "pnpm --filter fanxikit test && pnpm --filter @examples/fanxikit verify",
+    "test:fanxikit:phase1": "pnpm --filter fanxikit test",
+    "demo:fanxikit:manifest": "pnpm --filter @examples/fanxikit-phase1 manifest",
+    "demo:fanxikit:adapter": "pnpm --filter @examples/fanxikit-phase1 adapter",
+    "dev:example:basic": "pnpm run build:core && pnpm --filter @examples/basic dev",
+    "dev:spa": "pnpm run build:core && pnpm --filter @examples/full-fanxipan dev",
+    "doctor:core": "node ./scripts/doctor-core-sync.mjs",
+    "bench:runtime": "node ./scripts/benchmark-runtime.mjs",
+    "soak:runtime": "node ./scripts/soak-runtime.mjs",
+    "test:smoke:examples": "node ./scripts/smoke-examples.mjs",
+    "test:e2e:basic": "node ./scripts/e2e-basic.mjs",
+    "test:e2e:router": "node ./scripts/e2e-router.mjs",
+    "test:e2e:examples": "node ./scripts/e2e-examples.mjs",
+    "check:api-contract": "node ./scripts/check-api-contract.mjs",
+    "check:deprecations": "node ./scripts/check-deprecations.mjs",
+    "release:gate": "node ./scripts/check-release-gate.mjs",
+    "release:canary:dry": "node ./scripts/publish-canary.mjs --dry-run",
+    "release:canary": "node ./scripts/publish-canary.mjs",
+    "release:stable:dry": "node ./scripts/publish-stable.mjs --dry-run",
+    "release:stable": "node ./scripts/publish-stable.mjs",
+    "verify:spa": "pnpm run doctor:core && pnpm run build:core && pnpm run bench:runtime && pnpm run soak:runtime && pnpm run test:e2e:examples",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0",
+    "vitest": "^2.1.0",
+    "vite": "^6.0.0",
+    "tsup": "^8.3.0",
+    "@types/node": "^22.10.0",
+    "playwright": "^1.54.0"
+  }
+}
+
+

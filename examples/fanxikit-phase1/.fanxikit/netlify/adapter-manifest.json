@@ -1,0 +1,100 @@
+{
+  "adapter": "adapter-netlify",
+  "generatedAt": "2026-05-22T11:10:44.179Z",
+  "serverEntry": "src/server.ts",
+  "clientEntry": "src/client.ts",
+  "capabilities": {
+    "streaming": true,
+    "edge": true
+  },
+  "manifest": {
+    "root": "C:\\Users\\duong\\Workspace\\dev\\rust\\app\\renex\\examples\\fanxikit-phase1",
+    "routesDir": "src/routes",
+    "generatedAt": "2026-05-22T11:10:44.177Z",
+    "entries": [
+      {
+        "id": "/",
+        "path": "/",
+        "segments": [],
+        "files": [
+          {
+            "kind": "error",
+            "file": "+error.fanxi"
+          },
+          {
+            "kind": "layout",
+            "file": "+layout.fanxi"
+          },
+          {
+            "kind": "layout-load",
+            "file": "+layout.ts"
+          },
+          {
+            "kind": "page",
+            "file": "+page.fanxi"
+          },
+          {
+            "kind": "page-server",
+            "file": "+page.server.ts"
+          },
+          {
+            "kind": "page-load",
+            "file": "+page.ts"
+          }
+        ]
+      },
+      {
+        "id": "/about",
+        "path": "/about",
+        "segments": [
+          "about"
+        ],
+        "files": [
+          {
+            "kind": "page",
+            "file": "about/+page.fanxi"
+          },
+          {
+            "kind": "page-load",
+            "file": "about/+page.ts"
+          }
+        ]
+      },
+      {
+        "id": "/api",
+        "path": "/api",
+        "segments": [
+          "api"
+        ],
+        "files": [
+          {
+            "kind": "endpoint",
+            "file": "api/+server.ts"
+          }
+        ]
+      },
+      {
+        "id": "/blog/[id]",
+        "path": "/blog/:id",
+        "segments": [
+          "blog",
+          "[id]"
+        ],
+        "files": [
+          {
+            "kind": "page",
+            "file": "blog/[id]/+page.fanxi"
+          },
+          {
+            "kind": "page-server",
+            "file": "blog/[id]/+page.server.ts"
+          },
+          {
+            "kind": "page-load",
+            "file": "blog/[id]/+page.ts"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "@examples/fanxikit",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "manifest": "node scripts/manifest.mjs",
+    "ssr": "node scripts/server.mjs",
+    "build": "node scripts/build.mjs",
+    "adapter:node": "node scripts/adapter-node.mjs",
+    "adapter:static": "node scripts/adapter-static.mjs",
+    "adapter:cloudflare": "node scripts/adapter-cloudflare.mjs",
+    "verify": "node scripts/verify.mjs"
+  },
+  "dependencies": {
+    "fanxikit": "workspace:*",
+    "fanxi-adapter-node": "workspace:*",
+    "fanxi-adapter-static": "workspace:*",
+    "fanxi-adapter-cloudflare": "workspace:*"
+  }
+}

@@ -1,0 +1,31 @@
+import routes from "./routes"
+import { Routes } from "fanxipan/router"
+
+function App() {
+  const routesLocal = routes
+
+  return (
+    <div>
+      <h1>fanxipan Router Demo</h1>
+      <nav>
+        <a href="/">Home</a>
+        <span> | </span>
+        <a href="/dashboard">Dashboard</a>
+        <span> | </span>
+        <a href="/dashboard/settings">Settings</a>
+        <span> | </span>
+        <a href="/dashboard/settings/profile">Profile</a>
+        <span> | </span>
+        <a href="/dashboard/settings/clients">Clients (breakout)</a>
+        <span> | </span>
+        <a href="/user/42">User 42</a>
+      </nav>
+      <hr />
+      <Routes routes={routesLocal} />
+    </div>
+  )
+}
+
+export default App
+
+

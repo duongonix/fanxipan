@@ -1,0 +1,9 @@
+function RouteError() {
+  return (
+    <main>
+      <h1>Route Error</h1>
+    </main>
+  )
+}
+
+export default RouteError

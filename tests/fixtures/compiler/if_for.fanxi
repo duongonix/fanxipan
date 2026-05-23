@@ -1,0 +1,22 @@
+function App() {
+  let visible = $state(true)
+  let items = $state([])
+
+  return (
+    <div>
+      {#if visible}
+        <span>ok</span>
+      {:else}
+        <span>no</span>
+      {/if}
+
+      <ul>
+        {#for item in items key item.id}
+          <li>{item.text}</li>
+        {:empty}
+          <li>empty</li>
+        {/for}
+      </ul>
+    </div>
+  )
+}

@@ -1,0 +1,24 @@
+{
+  "name": "fanxipan-node",
+  "version": "0.1.0",
+  "type": "commonjs",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "fanxipan-node.*.node",
+    "npm"
+  ],
+  "scripts": {
+    "build": "napi build --platform --cargo-cwd ../../crates/fanxipan_node",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node -e \"require('./index.js')\""
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^2.18.4",
+    "typescript": "^5.8.0"
+  }
+}
+
+

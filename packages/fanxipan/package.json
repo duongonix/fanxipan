@@ -1,0 +1,23 @@
+{
+  "name": "fanxipan",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {"runtime": "workspace:*", "compiler": "workspace:*", "router": "workspace:*"},
+  "exports": {
+    ".": "./dist/index.js",
+    "./router": "./dist/router.js",
+    "./store": "./dist/store.js",
+    "./reactivity": "./dist/reactivity.js",
+    "./transitions": "./dist/transitions.js"
+  }
+}
+
+
+

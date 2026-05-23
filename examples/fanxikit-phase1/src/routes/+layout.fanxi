@@ -1,0 +1,9 @@
+function RootLayout() {
+  return (
+    <div>
+      <slot />
+    </div>
+  )
+}
+
+export default RootLayout

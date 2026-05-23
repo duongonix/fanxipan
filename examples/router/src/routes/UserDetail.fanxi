@@ -1,0 +1,11 @@
+function UserDetail({ params, route }) {
+  return (
+    <section>
+      <h3>User Detail</h3>
+      <p>route.path: {route.path}</p>
+      <p>params.id: {params.id}</p>
+    </section>
+  )
+}
+
+export default UserDetail

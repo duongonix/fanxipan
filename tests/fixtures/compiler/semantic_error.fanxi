@@ -1,0 +1,14 @@
+function App() {
+  let total = $derived(1)
+  let items = $state([])
+
+  return (
+    <div>
+      {#for item in items key item.id = 1}
+        <input bind:value={total + 1} />
+        <span>{unknownRef}</span>
+      {/for}
+      <button onclick={() => total++}>mutate</button>
+    </div>
+  )
+}

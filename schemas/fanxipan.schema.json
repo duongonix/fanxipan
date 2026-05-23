@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fanxipan.dev/schemas/fanxipan.schema.json",
+  "title": "fanxipan Config",
+  "type": "object",
+  "properties": {
+    "root": { "type": "string" },
+    "plugins": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "ssr": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
+
+

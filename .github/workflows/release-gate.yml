@@ -1,0 +1,61 @@
+name: Release Gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Tag name (fanxipan-vX.Y.Z)"
+        required: false
+  push:
+    tags:
+      - "fanxipan-v*"
+
+jobs:
+  release-gate:
+    name: Release Gate (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      RELEASE_TAG: ${{ github.event.inputs.release_tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.0.0
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Release Metadata Gate
+        run: pnpm run release:gate
+      - name: Core Doctor
+        run: pnpm run doctor:core
+      - name: Build Core
+        run: pnpm run build:core
+      - name: Unit + Integration Tests
+        run: pnpm test
+      - name: API Contract
+        run: pnpm run check:api-contract
+      - name: Deprecation Contract
+        run: pnpm run check:deprecations
+      - name: Runtime Benchmark
+        run: pnpm run bench:runtime
+      - name: Runtime Soak
+        run: pnpm run soak:runtime
+      - name: Build Examples
+        run: pnpm run build:examples
+      - name: Install Playwright Browser
+        run: pnpm exec playwright install chromium
+      - name: Install Linux Browser Deps
+        if: runner.os == 'Linux'
+        run: pnpm exec playwright install-deps chromium
+      - name: E2E Examples
+        run: pnpm run test:e2e:examples

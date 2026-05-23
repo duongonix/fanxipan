@@ -1,0 +1,21 @@
+function Comp({ name, click, onsave }) {
+  const sendSave = () => $emit("save", { from: name, at: Date.now() })
+
+  return (
+    <section>
+      <h3>{name}</h3>
+      <slot />
+      <div class="bg-red-200">
+        <button onclick={click}>+ from child</button>
+        <button onclick={sendSave}>emit save</button>
+      </div>
+      {#if onsave}
+        <small>parent listens: onSave</small>
+      {:else}
+        <small>no onSave provided</small>
+      {/if}
+    </section>
+  )
+}
+
+export default Comp

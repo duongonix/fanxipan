@@ -1,0 +1,15 @@
+function HomePage() {
+  let a = $state("jsdjfjfdh")
+  return (
+    <main>{a}
+      <h1>FanxiKit app framework</h1>
+      <p>SSR, load functions, actions, API routes, hooks, cookies, prerender, and adapters in one fixture app.</p>
+      <form method="POST">
+        <input name="name" placeholder="Session name" />
+        <button>Save session</button>
+      </form>
+    </main>
+  )
+}
+
+export default HomePage

@@ -1,0 +1,15 @@
+function TodoList() {
+  let todos = $state([])
+
+  return (
+    <ul>
+      {#for todo, index in todos key todo.id}
+        <li>{index + 1}. {todo.text}</li>
+      {:empty}
+        <li>No todos</li>
+      {/for}
+    </ul>
+  )
+}
+
+export default TodoList

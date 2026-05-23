@@ -1,0 +1,9 @@
+[package]
+name = "fanxipan_ssr"
+version = "0.1.0"
+edition.workspace = true
+
+[dependencies]
+
+
+

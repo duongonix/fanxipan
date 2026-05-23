@@ -1,0 +1,5 @@
+function App() {
+  return <div>SSR example</div>
+}
+
+export default App

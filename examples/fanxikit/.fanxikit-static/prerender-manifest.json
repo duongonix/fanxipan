@@ -1,0 +1,22 @@
+{
+  "adapter": "fanxi-adapter-static",
+  "generatedAt": "2026-05-22T11:54:18.234Z",
+  "pages": [
+    {
+      "path": "/",
+      "file": "C:\\Users\\duong\\Workspace\\dev\\rust\\app\\renex\\examples\\fanxikit\\.fanxikit-static\\index.html"
+    },
+    {
+      "path": "/about",
+      "file": "C:\\Users\\duong\\Workspace\\dev\\rust\\app\\renex\\examples\\fanxikit\\.fanxikit-static\\about\\index.html"
+    },
+    {
+      "path": "/dashboard",
+      "file": "C:\\Users\\duong\\Workspace\\dev\\rust\\app\\renex\\examples\\fanxikit\\.fanxikit-static\\dashboard\\index.html"
+    },
+    {
+      "path": "*",
+      "file": "C:\\Users\\duong\\Workspace\\dev\\rust\\app\\renex\\examples\\fanxikit\\.fanxikit-static\\200.html"
+    }
+  ]
+}

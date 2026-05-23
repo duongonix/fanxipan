@@ -1,0 +1,26 @@
+{
+  "name": "@examples/fanxikit-phase1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "manifest": "node scripts/print-manifest.mjs",
+    "ssr": "node scripts/ssr-server.mjs",
+    "verify:stream": "node scripts/verify-streaming.mjs",
+    "adapter": "node scripts/adapter-node.mjs",
+    "prerender": "node scripts/prerender-static.mjs",
+    "adapter:static": "node scripts/adapter-static.mjs",
+    "adapter:cloudflare": "node scripts/adapter-cloudflare.mjs",
+    "adapter:vercel": "node scripts/adapter-vercel.mjs",
+    "adapter:netlify": "node scripts/adapter-netlify.mjs"
+  },
+  "dependencies": {
+    "fanxikit": "workspace:*",
+    "fanxi-adapter-node": "workspace:*",
+    "fanxi-adapter-static": "workspace:*",
+    "fanxi-adapter-cloudflare": "workspace:*",
+    "fanxi-adapter-vercel": "workspace:*",
+    "fanxi-adapter-netlify": "workspace:*"
+  }
+}
+
+

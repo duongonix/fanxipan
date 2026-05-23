@@ -1,0 +1,7 @@
+function SettingsHome() {
+  return (
+    <p>Settings home</p>
+  )
+}
+
+export default SettingsHome

@@ -1,0 +1,15 @@
+{
+  "deprecations": [
+    {
+      "id": "compiler-helper-dericved-typo",
+      "package": "compiler",
+      "kind": "syntax",
+      "target": "$dericved(...)",
+      "deprecatedIn": "0.1.0",
+      "removeIn": "0.2.0",
+      "announceDate": "2026-05-21",
+      "removeInDate": "2026-08-31",
+      "migration": "Doi $dericved(...) thanh $derived(...)."
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+name: Release Native Bridge
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "fanxipan-node-v*"
+
+jobs:
+  build-native:
+    name: Build fanxipan-node (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.0.0
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Build Native
+        run: pnpm --filter fanxipan-node build
+      - name: Upload Native Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fanxipan-node-${{ matrix.os }}
+          path: packages/fanxipan-node/*.node
+
+

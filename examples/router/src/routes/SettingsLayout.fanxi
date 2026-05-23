@@ -1,0 +1,10 @@
+function SettingsLayout() {
+  return (
+    <section>
+      <h3>SettingsLayout (persist)</h3>
+      <slot />
+    </section>
+  )
+}
+
+export default SettingsLayout

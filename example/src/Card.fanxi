@@ -1,0 +1,22 @@
+function Card({ title = "Card", tone = "neutral" }) {
+  return (
+    <section class="card" data-tone={tone}>
+      <h2>{title}</h2>
+      <slot />
+    </section>
+  )
+}
+
+export const styles = `
+.card {
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.card[data-tone="success"] {
+  border-color: seagreen;
+}
+`
+
+export default Card

@@ -1,0 +1,10 @@
+function BlogDetailPage({ params }) {
+  console.log(params)
+  return (
+    <main>
+      <h1>Blog Detail</h1>
+    </main>
+  )
+}
+
+export default BlogDetailPage

@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+
+jobs:
+  rust:
+    name: Rust (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Cargo Test
+        run: cargo test --workspace --exclude fanxipan_node
+
+  js:
+    name: JS (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.0.0
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Build Core
+        run: pnpm run build:core
+      - name: Test
+        run: pnpm test
+      - name: Check API Contract
+        run: pnpm run check:api-contract
+      - name: Check Deprecations
+        run: pnpm run check:deprecations
+      - name: Smoke Examples
+        run: pnpm run test:smoke:examples
+
+  e2e-examples:
+    name: E2E Examples (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.0.0
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Install Playwright Browser
+        run: pnpm exec playwright install chromium
+      - name: Install Linux Browser Deps
+        if: runner.os == 'Linux'
+        run: pnpm exec playwright install-deps chromium
+      - name: Build Examples
+        run: pnpm run build:examples
+      - name: E2E Examples
+        run: pnpm run test:e2e:examples
+
+

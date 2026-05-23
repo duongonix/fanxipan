@@ -1,0 +1,10 @@
+function AboutPage() {
+  return (
+    <main>
+      <h1>About this app</h1>
+      <p>This route is prerenderable and participates in the shared root layout.</p>
+    </main>
+  )
+}
+
+export default AboutPage

@@ -1,0 +1,11 @@
+function DashboardLayout() {
+  let a = $state(0)
+  return (
+    <section>
+      <h1>Dashboardzzss {a}</h1>
+      <slot />
+    </section>
+  )
+}
+
+export default DashboardLayout

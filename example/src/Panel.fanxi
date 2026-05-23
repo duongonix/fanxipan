@@ -1,0 +1,7 @@
+function Panel({ label = "Dynamic panel" }) {
+  return (
+    <p>{label}</p>
+  )
+}
+
+export default Panel

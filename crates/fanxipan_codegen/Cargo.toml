@@ -1,0 +1,11 @@
+[package]
+name = "fanxipan_codegen"
+version = "0.1.0"
+edition.workspace = true
+
+[dependencies]
+fanxipan_ast = { path = "../fanxipan_ast" }
+fanxipan_analyzer = { path = "../fanxipan_analyzer" }
+
+
+

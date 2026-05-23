@@ -1,0 +1,8 @@
+file:semantic_error.fanxi
+has_if_anchor:false
+has_for_anchor:true
+has_keyed_rows:true
+has_scope:false
+css:none
+diagnostics:Cannot mutate derived state 'total'|Invalid bind target 'total + 1' (must be assignable)|Invalid key expression|Template expression must be pure (side effects are not allowed)|Unknown identifier 'unknownRef' in template scope
+

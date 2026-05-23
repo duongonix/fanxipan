@@ -1,0 +1,11 @@
+function BlogPage({ params }) {
+  return (
+    <main>
+      <h1>Blog detail</h1>ss
+      <h1>{params.id}</h1>
+      <p>Dynamic route data is loaded from +page.server.ts and serialized for hydration.</p>
+    </main>
+  )
+}
+
+export default BlogPage

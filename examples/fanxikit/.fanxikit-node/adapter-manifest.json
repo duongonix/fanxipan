@@ -1,0 +1,118 @@
+{
+  "adapter": "fanxi-adapter-node",
+  "generatedAt": "2026-05-22T11:59:52.369Z",
+  "serverEntry": null,
+  "clientEntry": null,
+  "capabilities": {
+    "streaming": true,
+    "edge": false
+  },
+  "routeManifest": {
+    "root": "C:\\Users\\duong\\Workspace\\dev\\rust\\app\\renex\\examples\\fanxikit",
+    "routesDir": "src/routes",
+    "generatedAt": "2026-05-22T11:59:52.368Z",
+    "entries": [
+      {
+        "id": "/",
+        "path": "/",
+        "segments": [],
+        "files": [
+          {
+            "kind": "error",
+            "file": "+error.fanxi"
+          },
+          {
+            "kind": "layout",
+            "file": "+layout.fanxi"
+          },
+          {
+            "kind": "layout-load",
+            "file": "+layout.ts"
+          },
+          {
+            "kind": "page",
+            "file": "+page.fanxi"
+          },
+          {
+            "kind": "page-server",
+            "file": "+page.server.ts"
+          }
+        ]
+      },
+      {
+        "id": "/about",
+        "path": "/about",
+        "segments": [
+          "about"
+        ],
+        "files": [
+          {
+            "kind": "page",
+            "file": "about/+page.fanxi"
+          },
+          {
+            "kind": "page-load",
+            "file": "about/+page.ts"
+          }
+        ]
+      },
+      {
+        "id": "/api/users",
+        "path": "/api/users",
+        "segments": [
+          "api",
+          "users"
+        ],
+        "files": [
+          {
+            "kind": "endpoint",
+            "file": "api/users/+server.ts"
+          }
+        ]
+      },
+      {
+        "id": "/blog/[id]",
+        "path": "/blog/:id",
+        "segments": [
+          "blog",
+          "[id]"
+        ],
+        "files": [
+          {
+            "kind": "page",
+            "file": "blog/[id]/+page.fanxi"
+          },
+          {
+            "kind": "page-server",
+            "file": "blog/[id]/+page.server.ts"
+          },
+          {
+            "kind": "page-load",
+            "file": "blog/[id]/+page.ts"
+          }
+        ]
+      },
+      {
+        "id": "/dashboard",
+        "path": "/dashboard",
+        "segments": [
+          "dashboard"
+        ],
+        "files": [
+          {
+            "kind": "layout",
+            "file": "dashboard/+layout.fanxi"
+          },
+          {
+            "kind": "layout-server",
+            "file": "dashboard/+layout.server.ts"
+          },
+          {
+            "kind": "page",
+            "file": "dashboard/+page.fanxi"
+          }
+        ]
+      }
+    ]
+  }
+}

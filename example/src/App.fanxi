@@ -1,0 +1,211 @@
+import { provide } from "fanxipan"
+import { FanxiMap } from "fanxipan/reactivity"
+import { fade, fly } from "fanxipan/transitions"
+import Card from "./Card.fanxi"
+import Panel from "./Panel.fanxi"
+
+function App() {
+  let title = $state("Fanxipan Full Example")
+  let text = $state("")
+  let enabled = $state(true)
+  let modalOpen = $state(false)
+  let attrs = $state({ "data-kind": "primary", title: "spread attribute" })
+  let Current = $state(Panel)
+  let nextId = $state(3)
+  let todos = $state([
+    { id: 1, name: "Compiler-first DOM updates", done: true },
+    { id: 2, name: "No virtual DOM", done: false }
+  ])
+  let status = $state("all")
+  let selectedTags = $state([])
+  let metrics = new FanxiMap([["mounts", 1]])
+  let filteredTodos = $derived(status === "all" ? todos : todos.filter((todo) => status === "done" ? todo.done : !todo.done))
+  let complete = $derived(todos.filter((todo) => todo.done).length)
+  let pending = $derived(todos.length - complete)
+  let profilePromise = $state(Promise.resolve({ name: "Fanxipan", role: "SPA core" }))
+
+  provide("theme", $global("dark"))
+
+  const addTodo = () => {
+    const value = text.trim()
+    if (!value) return
+    todos = todos.concat([{ id: nextId, name: value, done: false }])
+    nextId += 1
+    text = ""
+  }
+
+  const toggle = (id) => {
+    todos = todos.map((todo) => todo.id === id ? { ...todo, done: !todo.done } : todo)
+  }
+
+  const reloadProfile = () => {
+    profilePromise = new Promise((resolve) => setTimeout(() => resolve({ name: "Fanxipan", role: "Reactive runtime" }), 150))
+  }
+
+  const resize = () => {
+    metrics.set("width", window.innerWidth)
+  }
+
+  const tooltip = (node) => {
+    node.setAttribute("aria-label", "Fanxipan action attached")
+    return { destroy: () => node.removeAttribute("aria-label") }
+  }
+
+  $mount(() => {
+    metrics.set("mounts", (metrics.get("mounts") ?? 0) + 1)
+  })
+
+  $effect(() => {
+
+    console.log({ total: todos.length, done: complete, pending }, "todo metrics")
+  })
+
+  console.log(0)
+  return (
+    <main>
+      <head>
+        <title>{title}</title>
+        <meta name="description" content="Fanxipan production-ready frontend core example" />
+      </head>
+
+      <window onresize={resize} />
+      <body class:locked={modalOpen} />
+
+      <header>
+        <h1>{title}</h1>
+        <button {...attrs} use:tooltip onclick={() => modalOpen = !modalOpen}>
+          {modalOpen ? "Close modal" : "Open modal"}
+        </button>
+      </header>
+
+      <Card title="Component boundary" tone={enabled ? "success" : "neutral"}>
+        <p>Children are projected with slot. Pending work: {pending}</p>
+      </Card>
+
+      <form onsubmit|preventDefault={addTodo}>
+        <input bind:value={text} placeholder="Add a task" />
+        <label>
+          <input type="checkbox" bind:checked={enabled} />
+          enabled
+        </label>
+        <button>Add</button>
+      </form>
+
+      <nav>
+        <button class:active={status === "all"} onclick={() => status = "all"}>All</button>
+        <button class:active={status === "done"} onclick={() => status = "done"}>Done</button>
+        <button class:active={status === "open"} onclick={() => status = "open"}>Open</button>
+      </nav>
+
+      {#if complete === todos.length && todos.length > 0}
+        <p>Everything is complete.</p>
+      {:elif complete > 0}
+        <p>{complete} complete, {pending} open.</p>
+      {:else}
+        <p>No completed work yet.</p>
+      {/if}
+
+      <ul>
+        {#for todo, index in filteredTodos key todo.id}
+          <li class:done={todo.done} transition:fade>
+            <button onclick={() => toggle(todo.id)}>{todo.done ? "Done" : "Open"}</button>
+            <span>{todo.name}</span>
+          </li>
+        {:empty}
+          <li>No matching tasks</li>
+        {/for}
+      </ul>
+
+      <button onclick={reloadProfile}>Reload profile</button>
+      {#await profilePromise}
+        <p>Loading profile...</p>
+      {:then profile}
+        {#key profile.role}
+          <p in:fly>{profile.name} - {profile.role}</p>
+        {/key}
+      {:catch err}
+        <p>{err.message}</p>
+      {/await}
+
+      <component this={Current} label="Rendered through dynamic component" />
+
+      <label>
+        <input type="checkbox" value="compiler" bind:group={selectedTags} />
+        compiler
+      </label>
+      <label>
+        <input type="checkbox" value="runtime" bind:group={selectedTags} />
+        runtime
+      </label>
+      <p>Selected: {selectedTags.join(", ") || "none"}</p>
+    </main>
+  )
+}
+
+export const styles = `
+:global(body) {
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  color: #202124;
+  background: #f6f7f9;
+}
+
+:global(body.locked) {
+  overflow: hidden;
+}
+
+main {
+  display: grid;
+  gap: 1rem;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+header,
+form,
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+button,
+input {
+  border: 1px solid #b7bcc5;
+  border-radius: 6px;
+  padding: 0.5rem 0.7rem;
+  font: inherit;
+}
+
+button {
+  background: white;
+}
+
+button.active,
+button[data-kind="primary"] {
+  background: #174ea6;
+  border-color: #174ea6;
+  color: white;
+}
+
+ul {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+li {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.done span {
+  text-decoration: line-through;
+}
+`
+
+export default App

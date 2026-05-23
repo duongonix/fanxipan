@@ -1,0 +1,10 @@
+function DashboardPage() {
+  return (
+    <main>
+      <h2>Session dashboard</h2>
+      <p>This route demonstrates nested layout data and cookies-backed locals.</p>
+    </main>
+  )
+}
+
+export default DashboardPage

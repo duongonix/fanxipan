@@ -1,0 +1,19 @@
+[package]
+name = "fanxipan_node"
+version = "0.1.0"
+edition.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["napi"]
+napi = ["dep:napi", "dep:napi-derive"]
+
+[dependencies]
+fanxipan_compiler = { path = "../fanxipan_compiler" }
+serde_json.workspace = true
+napi = { version = "2", default-features = false, features = ["napi8"], optional = true }
+napi-derive = { version = "2", optional = true }
+
+

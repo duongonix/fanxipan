@@ -1,0 +1,14 @@
+[package]
+name = "fanxipan_compiler"
+version = "0.1.0"
+edition.workspace = true
+
+[dependencies]
+fanxipan_parser = { path = "../fanxipan_parser" }
+fanxipan_ast = { path = "../fanxipan_ast" }
+fanxipan_analyzer = { path = "../fanxipan_analyzer" }
+fanxipan_codegen = { path = "../fanxipan_codegen" }
+fanxipan_css = { path = "../fanxipan_css" }
+fanxipan_diagnostics = { path = "../fanxipan_diagnostics" }
+
+

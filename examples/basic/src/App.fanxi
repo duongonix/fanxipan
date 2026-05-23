@@ -1,0 +1,85 @@
+import fanxipan from "fanxipan"
+
+import Comp from "./Com.fanxi"
+
+function App() {
+  let count = $state(2)
+  let name = $state("fanxipan")
+  let showPanel = $state(true)
+  let query = $state("")
+  let nextId = $state(4)
+  let items = $state([{ id: 1, text: "learn $state", done: true }, { id: 2, text: "try bind:value", done: false }, { id: 3, text: "test slot + emit", done: false }])
+  let double = $derived(count * 2)
+  let doneCount = $derived(items.filter((x) => x.done).length)
+  let pendingCount = $derived(items.length - doneCount)
+
+  const onclick = () => count++
+  const onSave = (payload) => console.log(payload)
+  const addItem = () => {
+    const nextText = query.trim()
+    if (!nextText) return
+    items = items.concat([{ id: nextId, text: nextText, done: false }])
+    nextId = nextId + 1
+    query = ""
+  }
+
+  const toggleItem = (id) => {
+    items = items.map((x) => {
+      if (x.id !== id) return x
+      return { id: x.id, text: x.text, done: !x.done }
+    })
+  }
+
+  const removeDone = () => {
+    items = items.filter((x) => !x.done)
+  }
+
+  return (
+    <div>
+      <h2>fanxipan Basic Feature Showcase</h2>
+
+      <Comp name={name} click={onclick} onsave={onSave}>
+        <p>Projected by slot: count = {count}</p>
+      </Comp>
+
+      <form onsubmit|preventDefault={addItem}>
+        <input bind:value={query} placeholder="New todo..." />
+        <button>Add</button>
+      </form>
+
+      <label>
+        <input type="checkbox" bind:checked={showPanel} />
+        show panel
+      </label>
+
+      <div>
+        <button onclick={onclick}>increase from parent</button>
+        <button onclick={removeDone}>remove done</button>
+      </div>
+
+      {#if showPanel}
+        <p>{name} | count: {count} | double: {double}</p>
+        <p>done: {doneCount} | pending: {pendingCount}</p>
+        <ul>
+          {#for todo, index in items key todo.id}
+            <li>
+              <button onclick={() => toggleItem(todo.id)}>
+                [{todo.done ? "x" : " "}]
+              </button>
+              {index + 1}. {todo.text}
+            </li>
+          {:empty}
+            <li>No todos</li>
+          {/for}
+        </ul>
+      {:else}
+        <p>panel hidden</p>
+      {/if}
+    </div>
+  )
+}
+
+export default App
+
+
+
