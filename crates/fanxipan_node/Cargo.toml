@@ -16,4 +16,7 @@ serde_json.workspace = true
 napi = { version = "2", default-features = false, features = ["napi8"], optional = true }
 napi-derive = { version = "2", optional = true }
 
+[build-dependencies]
+napi-build = "2"
+
 
