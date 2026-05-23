@@ -41,12 +41,8 @@ jobs:
         run: pnpm run doctor:core
       - name: Build Core
         run: pnpm run build:core
-      - name: Unit Tests
-        run: pnpm test
-      - name: Bench Runtime
-        run: pnpm run bench:runtime
-      - name: Soak Runtime
-        run: pnpm run soak:runtime
+      - name: Verify Fanxipan
+        run: pnpm run verify:fanxipan
       - name: Canary Publish (Dry Run)
         if: ${{ github.event.inputs.dry_run != 'false' }}
         run: pnpm run release:canary:dry

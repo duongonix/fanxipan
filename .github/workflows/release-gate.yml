@@ -40,8 +40,6 @@ jobs:
         run: pnpm run doctor:core
       - name: Build Core
         run: pnpm run build:core
-      - name: Unit + Integration Tests
-        run: pnpm test
       - name: API Contract
         run: pnpm run check:api-contract
       - name: Deprecation Contract
@@ -50,6 +48,8 @@ jobs:
         run: pnpm run bench:runtime
       - name: Runtime Soak
         run: pnpm run soak:runtime
+      - name: Fanxipan Verify
+        run: pnpm run verify:fanxipan
       - name: Build Examples
         run: pnpm run build:examples
       - name: Install Playwright Browser

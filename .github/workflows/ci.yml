@@ -41,8 +41,8 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Build Core
         run: pnpm run build:core
-      - name: Test
-        run: pnpm test
+      - name: Fanxipan Tests
+        run: pnpm run test:fanxipan
       - name: Check API Contract
         run: pnpm run check:api-contract
       - name: Check Deprecations

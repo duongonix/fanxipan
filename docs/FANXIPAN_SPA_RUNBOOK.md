@@ -3,7 +3,7 @@
 ## Canonical Commands
 
 - Dev: `pnpm run dev:spa`
-- Full verification gate: `pnpm run verify:spa`
+- Full verification gate: `pnpm run verify:fanxipan`
 - Release metadata gate: `pnpm run release:gate`
 - Canary dry run publish: `pnpm run release:canary:dry`
 - Canary live publish: `pnpm run release:canary`
@@ -14,7 +14,7 @@
 
 1. `pnpm run doctor:core`
 2. `pnpm run build:core`
-3. `pnpm test`
+3. `pnpm run test:fanxipan`
 4. `pnpm run bench:runtime`
 5. `pnpm run soak:runtime`
 6. `pnpm run build:examples`
@@ -69,7 +69,7 @@
 
 1. Stop rollout and freeze new deployments.
 2. Re-point deploy artifact to the previous stable tag.
-3. Re-run `pnpm run verify:spa` on rollback tag.
+3. Re-run `pnpm run verify:fanxipan` on rollback tag.
 4. Confirm key user flows:
    - Todo add/update/filter in `example`
    - Basic example interaction

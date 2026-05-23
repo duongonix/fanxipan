@@ -69,8 +69,8 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Release Gate
         run: pnpm run release:gate
-      - name: Verify SPA
-        run: pnpm run verify:spa
+      - name: Verify Fanxipan
+        run: pnpm run verify:fanxipan
       - name: Publish Stable (Dry Run)
         if: ${{ github.event.inputs.dry_run != 'false' }}
         run: pnpm run release:stable:dry
