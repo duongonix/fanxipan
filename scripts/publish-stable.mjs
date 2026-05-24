@@ -4,6 +4,14 @@ import { spawnSync } from "node:child_process";
 
 const dryRun = process.argv.includes("--dry-run");
 const skipPreflight = process.argv.includes("--skip-preflight");
+const repoVisibility = (process.env.GITHUB_REPOSITORY_VISIBILITY || "").toLowerCase();
+const provenanceEnv = (process.env.NPM_PUBLISH_PROVENANCE || "").toLowerCase();
+const enableProvenance =
+  !dryRun &&
+  provenanceEnv !== "0" &&
+  provenanceEnv !== "false" &&
+  provenanceEnv !== "off" &&
+  repoVisibility !== "private";
 
 const publishPlan = [
   "packages/runtime",
@@ -125,10 +133,10 @@ for (const { relDir, pkg } of packages) {
 
   const args = ["publish", "--tag", "latest", "--access", "public"];
   if (dryRun) args.push("--dry-run");
-  else args.push("--provenance");
+  else if (enableProvenance) args.push("--provenance");
 
   console.log(
-    `[stable] publishing ${mutablePkg.name}@${mutablePkg.version} (${dryRun ? "dry-run" : "live"})`,
+    `[stable] publishing ${mutablePkg.name}@${mutablePkg.version} (${dryRun ? "dry-run" : "live"}${enableProvenance ? ", provenance" : ""})`,
   );
   run("npm", args, targetDir);
 }
