@@ -1,19 +1,37 @@
 {
   "name": "@fanxipan/node",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "commonjs",
   "main": "index.js",
   "types": "index.d.ts",
   "files": [
     "index.js",
     "index.d.ts",
-    "fanxipan-node.*.node",
+    "index.*.node",
     "npm"
   ],
   "scripts": {
     "build": "napi build --platform --cargo-cwd ../../crates/fanxipan_node",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node -e \"require('./index.js')\""
+  },
+  "napi": {
+    "name": "fanxipan-node",
+    "triples": {
+      "defaults": true
+    }
+  },
+  "optionalDependencies": {
+    "@fanxipan/node-win32-x64-msvc": "0.1.0",
+    "@fanxipan/node-win32-ia32-msvc": "0.1.0",
+    "@fanxipan/node-win32-arm64-msvc": "0.1.0",
+    "@fanxipan/node-darwin-universal": "0.1.0",
+    "@fanxipan/node-darwin-x64": "0.1.0",
+    "@fanxipan/node-darwin-arm64": "0.1.0",
+    "@fanxipan/node-linux-x64-gnu": "0.1.0",
+    "@fanxipan/node-linux-x64-musl": "0.1.0",
+    "@fanxipan/node-linux-arm64-gnu": "0.1.0",
+    "@fanxipan/node-linux-arm64-musl": "0.1.0"
   },
   "repository": {
     "type": "git",

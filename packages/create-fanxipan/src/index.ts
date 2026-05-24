@@ -10,6 +10,11 @@ export function runCreatefanxipan(argv: string[] = process.argv.slice(2)): void 
   const targetDir = path.resolve(process.cwd(), appName);
   scaffoldfanxipanApp(targetDir, template);
   console.log(`fanxipan ${template} app scaffolded at ${targetDir}`);
+  console.log("");
+  console.log("Next steps:");
+  console.log(`  cd ${appName}`);
+  console.log("  pnpm install");
+  console.log("  pnpm dev");
 }
 
 runCreatefanxipan();

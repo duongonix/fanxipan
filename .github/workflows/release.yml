@@ -32,9 +32,38 @@ jobs:
       - name: Smoke Create Fanxipan
         run: pnpm run test:smoke:create
 
+  native-artifacts:
+    name: Native Artifacts (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.0.0
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Build Native Node Bridge
+        run: pnpm --filter @fanxipan/node build
+      - name: Upload Native Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: fanxipan-node-${{ matrix.os }}
+          path: packages/fanxipan-node/*.node
+
   release:
     runs-on: ubuntu-latest
-    needs: create-cli-smoke
+    needs: [create-cli-smoke, native-artifacts]
     env:
       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
@@ -56,6 +85,19 @@ jobs:
 
       - name: Install
         run: pnpm install --frozen-lockfile
+
+      - name: Download Native Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: fanxipan-node-*
+          path: .tmp/native-artifacts
+          merge-multiple: true
+
+      - name: Stage Native Artifacts into @fanxipan/node
+        run: |
+          mkdir -p packages/fanxipan-node
+          cp .tmp/native-artifacts/*.node packages/fanxipan-node/
+          ls -la packages/fanxipan-node/*.node
 
       - name: Verify npm auth (token must allow publish)
         run: |
