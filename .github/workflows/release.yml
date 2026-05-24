@@ -37,7 +37,6 @@ jobs:
     needs: create-cli-smoke
     env:
       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      NPM_PUBLISH_PROVENANCE: "false"
     steps:
       - uses: actions/checkout@v4
 

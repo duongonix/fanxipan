@@ -1,6 +1,6 @@
 param(
   [string]$SourceRoot = (Resolve-Path ".").Path,
-  [string]$TargetRepoUrl = "https://github.com/duongonix/fanxipan_repo.git",
+  [string]$TargetRepoUrl = "https://github.com/duongonix/fanxipan.git",
   [string]$Branch = "main",
   [string]$CommitMessage = "chore: bootstrap fanxipan release-ready repository",
   [string]$WorkDir = ".tmp/fanxipan_repo_sync"

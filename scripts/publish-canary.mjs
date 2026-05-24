@@ -4,14 +4,6 @@ import { spawnSync } from "node:child_process";
 
 const dryRun = process.argv.includes("--dry-run");
 const skipPreflight = process.argv.includes("--skip-preflight");
-const repoVisibility = (process.env.GITHUB_REPOSITORY_VISIBILITY || "").toLowerCase();
-const provenanceEnv = (process.env.NPM_PUBLISH_PROVENANCE || "").toLowerCase();
-const enableProvenance =
-  !dryRun &&
-  provenanceEnv !== "0" &&
-  provenanceEnv !== "false" &&
-  provenanceEnv !== "off" &&
-  repoVisibility !== "private";
 
 const publishPlan = [
   "packages/runtime",
@@ -139,10 +131,10 @@ for (const { relDir, pkg } of packages) {
 
   const args = ["publish", "--tag", "canary", "--access", "public"];
   if (dryRun) args.push("--dry-run");
-  else if (enableProvenance) args.push("--provenance");
+  else args.push("--provenance");
 
   console.log(
-    `[canary] publishing ${mutablePkg.name}@${canaryVersion} (${dryRun ? "dry-run" : "live"}${enableProvenance ? ", provenance" : ""})`,
+    `[canary] publishing ${mutablePkg.name}@${canaryVersion} (${dryRun ? "dry-run" : "live"})`,
   );
   run("npm", args, targetDir);
 }

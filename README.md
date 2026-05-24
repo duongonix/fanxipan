@@ -1,48 +1,69 @@
-# fanxipan
+# Fanxipan
 
-fanxipan là frontend framework compiler-first với Rust compiler + tiny TypeScript runtime.
+Fanxipan is a compiler-first framework for building modern single-page web applications.
+It compiles declarative `.fanxi` components into optimized JavaScript with predictable runtime behavior, fast updates, and a clean developer experience.
 
-## Trụ cột
+write by Rust and Typescript
 
-- Compiler-first: parse/analyze/generate ở compile-time.
-- Fine-grained reactivity: `$state`, `$derived`, `$effect`, `$global`.
-- Direct DOM updates, không virtual DOM.
-- Runtime nhỏ cho mount/scheduler/context/store/transition helpers.
-- SPA-first, với hydration foundation để FanxiKit dùng sau.
+Fanxipan is designed for teams that want:
+- a simple authoring model
+- explicit, framework-level reactivity
+- production-ready build and release workflows
 
-## Monorepo
+Public API stays ergonomic:
 
-- Rust workspace trong `crates/*`.
-- PNPM workspace trong `packages/*`, `examples/*` và `example`.
-- Specs chi tiết trong `docs/specs/*`.
-
-## Lệnh cơ bản
-
-- Rust check: `cargo check`
-- JS build: `pnpm -r build`
-- Core build (kèm native bridge): `pnpm run build:core`
-- Build NAPI bridge riêng: `pnpm --filter @fanxipan/node build`
-- JS typecheck: `pnpm -r typecheck`
-- API contract check: `pnpm run check:api-contract`
-- Deprecation policy check: `pnpm run check:deprecations`
-- Full example: `pnpm --filter @examples/full-fanxipan build`
-
-## Đuôi file component
-
-fanxipan component dùng đuôi `.fanxi`. File `.fanxi` là module function component: import ở đầu file, khai báo state trong function, trả về Fanxi template bằng `return (...)`, rồi `export default`.
-
-```fanxi
-function Counter() {
-  let count = $state(0)
-  let doubled = $derived(count * 2)
-
-  return (
-    <button onclick={() => count++}>{count} / {doubled}</button>
-  )
-}
-
-export default Counter
+```ts
+import fanxipan from "fanxipan";
+import { Routes } from "fanxipan/router";
 ```
 
+## Why Fanxipan
 
+Fanxipan focuses on practical engineering outcomes:
+- Compiler-driven output for efficient DOM updates
+- Clear component contract and state model
+- Built-in support for modern tooling with Vite
+- Structured monorepo architecture for framework evolution
 
+## Project Structure
+
+- `packages/`: framework packages (`fanxipan`, runtime, router, compiler, tooling)
+- `crates/`: Rust core and native/compiler backend components
+- `examples/`: runnable example applications
+- `scripts/`: build, verification, release, and publishing automation
+
+## Supporting Fanxipan
+
+Fanxipan is an MIT-licensed open-source project.
+If Fanxipan helps your work, you can support the project by:
+- contributing code, tests, and documentation
+- reporting reproducible issues
+- reviewing pull requests
+- sharing the framework with your team and community
+
+## Roadmap
+
+To see current priorities and upcoming work, review:
+
+- [ROADMAP_90.md](/C:/Users/duong/Workspace/dev/rust/app/renex/ROADMAP_90.md)
+
+## Contributing
+
+Contributions are welcome.
+Please follow the repository conventions and run validation checks before opening a pull request.
+
+Useful areas to start:
+- `packages/` for framework APIs and tooling
+- `crates/` for Rust/compiler internals
+- `examples/` for integration coverage and developer workflows
+
+## Operational Status
+
+If package installation or release behavior appears unavailable, verify:
+- npm registry status
+- GitHub Actions status for this repository
+- local network, DNS, or proxy configuration
+
+## License
+
+MIT

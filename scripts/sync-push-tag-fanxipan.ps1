@@ -1,7 +1,7 @@
 param(
   [string]$SourceRoot = (Resolve-Path ".").Path,
   [string]$WorkDir = ".tmp/fanxipan_repo_sync",
-  [string]$RepoUrl = "https://github.com/duongonix/fanxipan_repo.git",
+  [string]$RepoUrl = "https://github.com/duongonix/fanxipan.git",
   [string]$Branch = "main",
   [string]$CommitMessage = "chore: sync fanxipan release workspace",
   [string]$Tag = "",

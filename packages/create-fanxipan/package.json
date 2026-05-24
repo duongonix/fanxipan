@@ -11,11 +11,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/duongonix/fanxipan_repo"
+    "url": "https://github.com/duongonix/fanxipan"
   },
-  "homepage": "https://github.com/duongonix/fanxipan_repo#readme",
+  "homepage": "https://github.com/duongonix/fanxipan#readme",
   "bugs": {
-    "url": "https://github.com/duongonix/fanxipan_repo/issues"
+    "url": "https://github.com/duongonix/fanxipan/issues"
   },
   "bin": {
     "create-fanxipan": "dist/index.js"
