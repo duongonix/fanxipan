@@ -105,7 +105,11 @@ $resolvedWork = Join-Path $resolvedSource $WorkDir
 
 # Avoid "detected dubious ownership" on Windows when workspace user context changes.
 if (-not $DryRun) {
-  & git config --global --add safe.directory $resolvedWork | Out-Null
+  try {
+    & git config --global --add safe.directory $resolvedWork | Out-Null
+  } catch {
+    Write-Host "   warning: unable to update global git safe.directory; continuing" -ForegroundColor Yellow
+  }
 }
 
 $includePaths = @(
