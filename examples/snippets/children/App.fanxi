@@ -1,0 +1,21 @@
+function Card(props) {
+  return (
+    <section>
+      <div>{@render props.children?.()}</div>
+      <footer>{@render props.footer?.()}</footer>
+    </section>
+  )
+}
+
+function App() {
+  return (
+    <Card>
+      <h1>Normal children content</h1>
+      {#snippet footer()}
+        <button>OK</button>
+      {/snippet}
+    </Card>
+  )
+}
+
+export default App

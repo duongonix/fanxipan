@@ -1,0 +1,47 @@
+{
+  "name": "fanxiui",
+  "version": "1.0.0",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./dialog": {
+      "types": "./dist/components/dialog/index.d.ts",
+      "import": "./dist/components/dialog/index.js"
+    },
+    "./select": {
+      "types": "./dist/components/select/index.d.ts",
+      "import": "./dist/components/select/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "fanxipan": ">=0.1.0"
+  },
+  "scripts": {
+    "build": "node ../../node_modules/typescript/lib/tsc.js -p tsconfig.json && node scripts/postbuild.mjs",
+    "test:unit": "node --test tests/*.test.mjs",
+    "test:e2e": "node --test tests/*.test.mjs",
+    "test": "pnpm run build && pnpm run test:unit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.8.0"
+  }
+}
+

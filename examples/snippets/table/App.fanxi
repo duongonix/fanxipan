@@ -1,0 +1,38 @@
+function Table(props) {
+  return (
+    <table>
+      <thead>
+        <tr>{@render props.header?.()}</tr>
+      </thead>
+      <tbody>
+        {#for item, index in props.data key item.id}
+          <tr>{@render props.row(item, index)}</tr>
+        {:empty}
+          <tr><td>No data</td></tr>
+        {/for}
+      </tbody>
+    </table>
+  )
+}
+
+function App() {
+  let users = $state([
+    { id: 1, name: "Ada", email: "ada@fanxipan.dev" },
+    { id: 2, name: "Linus", email: "linus@fanxipan.dev" }
+  ])
+
+  return (
+    <Table data={users}>
+      {#snippet header()}
+        <th>Name</th>
+        <th>Email</th>
+      {/snippet}
+      {#snippet row(user)}
+        <td>{user.name}</td>
+        <td>{user.email}</td>
+      {/snippet}
+    </Table>
+  )
+}
+
+export default App

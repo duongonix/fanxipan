@@ -12,7 +12,7 @@ const publishPlan = [
   "packages/fanxipan-node",
   "packages/fanxipan",
   "packages/vite-plugin-fanxipan",
-  "packages/create-fanxipan",
+  "packages/create-fanxipan",`n  "packages/fanxicon",`n  "packages/fanxiui",
 ];
 
 const rootPkg = JSON.parse(readFileSync("package.json", "utf8"));

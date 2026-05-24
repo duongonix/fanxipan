@@ -1,0 +1,22 @@
+import { Select } from "fanxiui";
+
+function App() {
+  return (
+    <Select.Root defaultValue="apple">
+      <Select.Trigger>
+        <Select.Value placeholder="Choose a fruit" />
+      </Select.Trigger>
+      <Select.Portal>
+        <Select.Content>
+          <Select.Viewport>
+            <Select.Item value="apple" textValue="Apple"><Select.ItemText>Apple</Select.ItemText></Select.Item>
+            <Select.Item value="banana" textValue="Banana"><Select.ItemText>Banana</Select.ItemText></Select.Item>
+            <Select.Item value="orange" textValue="Orange"><Select.ItemText>Orange</Select.ItemText></Select.Item>
+          </Select.Viewport>
+        </Select.Content>
+      </Select.Portal>
+    </Select.Root>
+  );
+}
+
+export default App;

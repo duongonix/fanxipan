@@ -36,7 +36,7 @@ export function appFanxi(template = "basic"): string {
       </form>
       <p>{remaining} remaining</p>
       <ul>
-        {#for todo in todos key todo.id}
+        {#fodr todo in todos key todo.id}
           <li class:done={todo.done}>{todo.text}</li>
         {:empty}
           <li>No todos</li>
@@ -100,10 +100,47 @@ export default App
   let doubled = $derived(count * 2);
 
   return (
-    <main class="app">
-      <h1>Fanxipan App</h1>
-      <button onclick={() => count++}>count: {count}</button>
-      <p>doubled: {doubled}</p>
+    <main class="min-h-screen bg-slate-950 text-slate-100">
+      <div class="mx-auto flex min-h-screen w-full max-w-5xl flex-col justify-center px-6 py-12">
+        <section class="relative overflow-hidden rounded-3xl border border-cyan-400/20 bg-slate-900/70 p-8 shadow-2xl shadow-cyan-950/40 backdrop-blur">
+          <div class="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-cyan-500/20 blur-3xl"></div>
+          <div class="pointer-events-none absolute -bottom-20 -left-20 h-56 w-56 rounded-full bg-indigo-500/20 blur-3xl"></div>
+
+          <p class="mb-3 inline-flex w-fit rounded-full border border-cyan-300/30 bg-cyan-400/10 px-3 py-1 text-xs font-semibold tracking-widest text-cyan-200">
+            FANXIPAN STARTER
+          </p>
+          <h1 class="text-4xl font-black tracking-tight sm:text-5xl">Fanxipan App</h1>
+          <p class="mt-3 max-w-2xl text-slate-300">
+            Compiler-first UI, reactive state, and zero-ceremony components.
+          </p>
+
+          <div class="mt-8 grid gap-4 sm:grid-cols-2">
+            <article class="rounded-2xl border border-slate-700/70 bg-slate-800/70 p-5">
+              <p class="text-xs uppercase tracking-wider text-slate-400">Count</p>
+              <p class="mt-2 text-3xl font-bold">{count}</p>
+            </article>
+            <article class="rounded-2xl border border-slate-700/70 bg-slate-800/70 p-5">
+              <p class="text-xs uppercase tracking-wider text-slate-400">Doubled</p>
+              <p class="mt-2 text-3xl font-bold text-cyan-300">{doubled}</p>
+            </article>
+          </div>
+
+          <div class="mt-8 flex flex-wrap items-center gap-3">
+            <button
+              class="rounded-xl bg-cyan-400 px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-cyan-300"
+              onclick={() => count++}
+            >
+              Increase Count
+            </button>
+            <button
+              class="rounded-xl border border-slate-600 bg-slate-800 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-slate-400"
+              onclick={() => count = 0}
+            >
+              Reset
+            </button>
+          </div>
+        </section>
+      </div>
     </main>
   )
 }

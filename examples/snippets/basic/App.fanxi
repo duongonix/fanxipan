@@ -1,0 +1,17 @@
+function App() {
+  let prefix = $state("Hello")
+  let user = $state("Fanxipan")
+
+  return (
+    <main>
+      {#snippet greet(name)}
+        <p>{prefix} {name}</p>
+      {/snippet}
+
+      {@render greet(user)}
+      <button onclick={() => prefix = "Hi"}>Change Prefix</button>
+    </main>
+  )
+}
+
+export default App

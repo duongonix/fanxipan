@@ -283,6 +283,18 @@ pub fn emit_component_props_object(
                 .unwrap_or_else(|| "true".to_string());
             let wrapped = wrap_component_prop_value(&value, graph);
             pairs.push(format!("{:?}: {wrapped}", d.name));
+            if d.kind == "bind" && is_assignable_target(&value) {
+                let cap = capitalize_first(&d.name);
+                let notify_stmt = first_identifier(&value)
+                    .map(|id| format!(" if (ctx.notify) ctx.notify({id:?});"))
+                    .unwrap_or_default();
+                pairs.push(format!(
+                    "{:?}: (next) => {{ {} = next;{} }}",
+                    format!("on{}Change", cap),
+                    value,
+                    notify_stmt
+                ));
+            }
         } else if d.kind == "event" {
             let value = d
                 .expression

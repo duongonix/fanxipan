@@ -2,8 +2,8 @@ use super::types::{TemplateParseError, TemplateParseOutput};
 use super::utils::{consume, is_element_start, skip_spaces, split_once, starts_with_any};
 use fanxipan_ast::{
     AwaitBlock, ComponentNode, DirectiveNode, ElementNode, ElifBlock, ElseBlock, EmptyBlock,
-    ExpressionNode, ForBlock, IfBlock, KeyBlock, RenderBlock, SnippetBlock, Span, TemplateAst,
-    TemplateNode, TextNode,
+    ConstBlock, ExpressionNode, ForBlock, HtmlBlock, IfBlock, KeyBlock, RenderBlock,
+    SnippetBlock, SnippetParam, Span, TemplateAst, TemplateNode, TextNode,
 };
 
 pub fn parse_template(source: &str) -> TemplateParseOutput {
@@ -62,6 +62,14 @@ fn parse_nodes(
             nodes.push(TemplateNode::RenderBlock(parse_render_block(
                 source, cursor,
             )));
+            continue;
+        }
+        if source[*cursor..].starts_with("{@html ") {
+            nodes.push(TemplateNode::HtmlBlock(parse_html_block(source, cursor)));
+            continue;
+        }
+        if source[*cursor..].starts_with("{@const ") {
+            nodes.push(TemplateNode::ConstBlock(parse_const_block(source, cursor)));
             continue;
         }
         if source[*cursor..].starts_with('<')
@@ -271,16 +279,32 @@ fn parse_key_block(source: &str, cursor: &mut usize) -> KeyBlock {
 }
 
 fn parse_snippet_block(source: &str, cursor: &mut usize) -> SnippetBlock {
-    let (header, _) = read_block_header(source, cursor, "{#snippet ", "}");
+    let (header, header_span) = read_block_header(source, cursor, "{#snippet ", "}");
     let (name, params) = if let Some(open_idx) = header.find('(') {
         let close_idx = header.rfind(')').unwrap_or(header.len());
         let snippet_name = header[..open_idx].trim().to_string();
         let args_src = &header[open_idx + 1..close_idx];
-        let args = args_src
-            .split(',')
-            .map(|s| s.trim())
-            .filter(|s| !s.is_empty())
-            .map(|s| s.to_string())
+        let args = split_comma_expressions(args_src)
+            .into_iter()
+            .map(|raw| {
+                let trimmed = raw.trim().to_string();
+                let is_rest = trimmed.starts_with("...");
+                let (pattern, default_value) = if let Some((lhs, rhs)) = split_once(&trimmed, "=")
+                {
+                    (
+                        lhs.trim().to_string(),
+                        Some(expr_node(rhs.trim().to_string(), None)),
+                    )
+                } else {
+                    (trimmed.clone(), None)
+                };
+                SnippetParam {
+                    pattern,
+                    default_value,
+                    is_rest,
+                    span: None,
+                }
+            })
             .collect::<Vec<_>>();
         (snippet_name, args)
     } else {
@@ -288,24 +312,66 @@ fn parse_snippet_block(source: &str, cursor: &mut usize) -> SnippetBlock {
     };
     let body = parse_nodes(source, cursor, &["{/snippet}"], None);
     consume(source, cursor, "{/snippet}");
-    SnippetBlock { name, params, body }
+    SnippetBlock {
+        name,
+        params,
+        body,
+        span: Some(header_span),
+    }
 }
 
 fn parse_render_block(source: &str, cursor: &mut usize) -> RenderBlock {
-    let (render_src, _) = read_block_header(source, cursor, "{@render ", "}");
+    let (render_src, span) = read_block_header(source, cursor, "{@render ", "}");
     if let Some(open_idx) = render_src.find('(') {
         let close_idx = render_src.rfind(')').unwrap_or(render_src.len());
-        let target = render_src[..open_idx].trim().to_string();
+        let mut target = render_src[..open_idx].trim().to_string();
+        let mut optional = false;
+        if let Some(base) = target.strip_suffix("?.") {
+            target = base.trim().to_string();
+            optional = true;
+        }
         let args_src = &render_src[open_idx + 1..close_idx];
         let args = split_comma_expressions(args_src)
             .into_iter()
             .map(|arg| expr_node(arg, None))
             .collect::<Vec<_>>();
-        RenderBlock { target, args }
+        RenderBlock {
+            target,
+            args,
+            optional,
+            span: Some(span),
+        }
     } else {
         RenderBlock {
             target: render_src.trim().to_string(),
             args: Vec::new(),
+            optional: false,
+            span: Some(span),
+        }
+    }
+}
+
+fn parse_html_block(source: &str, cursor: &mut usize) -> HtmlBlock {
+    let (html_src, span) = read_block_header(source, cursor, "{@html ", "}");
+    HtmlBlock {
+        expression: expr_node(html_src.trim().to_string(), None),
+        span: Some(span),
+    }
+}
+
+fn parse_const_block(source: &str, cursor: &mut usize) -> ConstBlock {
+    let (raw, span) = read_block_header(source, cursor, "{@const ", "}");
+    if let Some((lhs, rhs)) = split_once(&raw, "=") {
+        ConstBlock {
+            name: lhs.trim().to_string(),
+            expression: expr_node(rhs.trim().to_string(), None),
+            span: Some(span),
+        }
+    } else {
+        ConstBlock {
+            name: raw.trim().to_string(),
+            expression: expr_node("undefined".to_string(), None),
+            span: Some(span),
         }
     }
 }
@@ -549,6 +615,8 @@ fn read_until_control(
             || source[*cursor..].starts_with("{#key ")
             || source[*cursor..].starts_with("{#snippet ")
             || source[*cursor..].starts_with("{@render ")
+            || source[*cursor..].starts_with("{@html ")
+            || source[*cursor..].starts_with("{@const ")
             || source[*cursor..].starts_with('{')
             || source[*cursor..].starts_with('<')
             || starts_with_any(source, *cursor, stops)
@@ -682,7 +750,119 @@ fn collect_template_errors(source: &str) -> Vec<TemplateParseError> {
 
     out.extend(validate_tag_pairs(source));
     out.extend(validate_unclosed_braces(source));
+    out.extend(validate_snippet_render_syntax(source));
 
+    out
+}
+
+fn validate_snippet_render_syntax(source: &str) -> Vec<TemplateParseError> {
+    let mut out = Vec::new();
+    let mut pos = 0usize;
+    while let Some(found) = source[pos..].find("{#snippet") {
+        let start = pos + found;
+        let end = source[start..]
+            .find('}')
+            .map(|v| start + v)
+            .unwrap_or(source.len());
+        let header = source[start + "{#snippet".len()..end].trim();
+        let (line, column) = index_to_line_col(source, start);
+        if header.is_empty() {
+            out.push(TemplateParseError {
+                message: "Missing snippet name.".to_string(),
+                line,
+                column,
+                span: Some(Span { start, end }),
+                suggestion: Some("Use {#snippet name(...)}".to_string()),
+            });
+        } else if header.contains("...") {
+            out.push(TemplateParseError {
+                message: "Rest parameters are not supported in snippets.".to_string(),
+                line,
+                column,
+                span: Some(Span { start, end }),
+                suggestion: Some("Remove rest parameter and pass explicit args".to_string()),
+            });
+        } else if header.contains('(') && !header.contains(')') {
+            out.push(TemplateParseError {
+                message: "Invalid snippet parameters.".to_string(),
+                line,
+                column,
+                span: Some(Span { start, end }),
+                suggestion: Some("Close parameter list with ')'".to_string()),
+            });
+        }
+        pos = end.saturating_add(1);
+    }
+
+    pos = 0;
+    while let Some(found) = source[pos..].find("{@render") {
+        let start = pos + found;
+        let end = source[start..]
+            .find('}')
+            .map(|v| start + v)
+            .unwrap_or(source.len());
+        let expr = source[start + "{@render".len()..end].trim();
+        let (line, column) = index_to_line_col(source, start);
+        if expr.is_empty() {
+            out.push(TemplateParseError {
+                message: "Missing render expression.".to_string(),
+                line,
+                column,
+                span: Some(Span { start, end }),
+                suggestion: Some("Use {@render snippet(...)}".to_string()),
+            });
+        } else if !expr.contains('(') {
+            out.push(TemplateParseError {
+                message: "Render expression must be a call expression.".to_string(),
+                line,
+                column,
+                span: Some(Span { start, end }),
+                suggestion: Some("Use {@render name(args)} or {@render maybe?.(args)}".to_string()),
+            });
+        }
+        pos = end.saturating_add(1);
+    }
+
+    pos = 0;
+    while let Some(found) = source[pos..].find("{@html") {
+        let start = pos + found;
+        let end = source[start..]
+            .find('}')
+            .map(|v| start + v)
+            .unwrap_or(source.len());
+        let expr = source[start + "{@html".len()..end].trim();
+        let (line, column) = index_to_line_col(source, start);
+        if expr.is_empty() {
+            out.push(TemplateParseError {
+                message: "Missing html expression.".to_string(),
+                line,
+                column,
+                span: Some(Span { start, end }),
+                suggestion: Some("Use {@html expression}".to_string()),
+            });
+        }
+        pos = end.saturating_add(1);
+    }
+    pos = 0;
+    while let Some(found) = source[pos..].find("{@const") {
+        let start = pos + found;
+        let end = source[start..]
+            .find('}')
+            .map(|v| start + v)
+            .unwrap_or(source.len());
+        let expr = source[start + "{@const".len()..end].trim();
+        let (line, column) = index_to_line_col(source, start);
+        if expr.is_empty() || !expr.contains('=') {
+            out.push(TemplateParseError {
+                message: "Invalid const declaration.".to_string(),
+                line,
+                column,
+                span: Some(Span { start, end }),
+                suggestion: Some("Use {@const name = expression}".to_string()),
+            });
+        }
+        pos = end.saturating_add(1);
+    }
     out
 }
 
@@ -1078,7 +1258,8 @@ mod tests {
         match &out.ast.nodes[0] {
             TemplateNode::SnippetBlock(block) => {
                 assert_eq!(block.name, "row");
-                assert_eq!(block.params, vec!["item"]);
+                assert_eq!(block.params.len(), 1);
+                assert_eq!(block.params[0].pattern, "item");
             }
             _ => panic!("expected snippet block"),
         }
@@ -1125,5 +1306,54 @@ mod tests {
                 .iter()
                 .any(|e| e.message.contains("Unexpected {:empty}"))
         );
+    }
+
+    #[test]
+    fn reports_snippet_rest_param_and_render_call_errors() {
+        let source = "{#snippet bad(...items)}{/snippet}{@render row}";
+        let out = parse_template(source);
+        assert!(
+            out.errors
+                .iter()
+                .any(|e| e.message.contains("Rest parameters are not supported in snippets"))
+        );
+        assert!(
+            out.errors
+                .iter()
+                .any(|e| e.message.contains("Render expression must be a call expression"))
+        );
+    }
+
+    #[test]
+    fn parses_html_block() {
+        let source = "<div>{@html \"<button></button>\"}</div>";
+        let out = parse_template(source);
+        assert!(out.errors.is_empty());
+        match &out.ast.nodes[0] {
+            TemplateNode::Element(el) => match &el.children[0] {
+                TemplateNode::HtmlBlock(h) => {
+                    assert!(h.expression.source.contains("<button></button>"));
+                }
+                _ => panic!("expected html block"),
+            },
+            _ => panic!("expected element"),
+        }
+    }
+
+    #[test]
+    fn parses_const_block() {
+        let source = "{#for box in boxes}{@const area = box.w * box.h}{area}{/for}";
+        let out = parse_template(source);
+        assert!(out.errors.is_empty());
+        match &out.ast.nodes[0] {
+            TemplateNode::ForBlock(block) => match &block.body[0] {
+                TemplateNode::ConstBlock(c) => {
+                    assert_eq!(c.name, "area");
+                    assert_eq!(c.expression.source, "box.w * box.h");
+                }
+                _ => panic!("expected const block"),
+            },
+            _ => panic!("expected for block"),
+        }
     }
 }

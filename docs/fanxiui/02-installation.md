@@ -1,0 +1,3 @@
+# Installation
+
+`pnpm add fanxiui`

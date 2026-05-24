@@ -211,6 +211,15 @@ pub fn emit_for_block(
     out.push_str(&format!("      const __key = {key_expr};\n"));
     out.push_str("      if (nextRows.has(__key)) continue;\n");
     out.push_str(&format!("      const __prev = {rows}.get(__key);\n"));
+    out.push_str("      if (__prev && __prev.item === ");
+    out.push_str(&block.item);
+    out.push_str(") {\n");
+    out.push_str(&format!(
+        "        moveRangeBefore(__prev.start, __prev.end, {end});\n"
+    ));
+    out.push_str("        nextRows.set(__key, __prev);\n");
+    out.push_str("        continue;\n");
+    out.push_str("      }\n");
     out.push_str("      if (__prev) {\n");
     out.push_str("        let n = __prev.start;\n");
     out.push_str("        while (n) { const next = n.nextSibling; n.parentNode.removeChild(n); if (n === __prev.end) break; n = next; }\n");
@@ -226,7 +235,9 @@ pub fn emit_for_block(
     out.push_str(&format!(
         "      {end}.parentNode.insertBefore(__rowFrag, {end});\n"
     ));
-    out.push_str("      const __row = { start: __rowStart, end: __rowEnd };\n");
+    out.push_str("      const __row = { start: __rowStart, end: __rowEnd, item: ");
+    out.push_str(&block.item);
+    out.push_str(" };\n");
     out.push_str("      nextRows.set(__key, __row);\n");
     out.push_str("    }\n");
     out.push_str(&format!(

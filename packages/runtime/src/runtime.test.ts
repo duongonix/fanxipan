@@ -11,7 +11,7 @@ import {
   runWithRenderContext,
   state,
 } from "./index";
-import { writable, readable, derived as derivedStore } from "./store";
+import { writable, readable, derived as derivedStore, readonly as readonlyStore, get as getStore } from "./store";
 
 describe("runtime reactivity", () => {
   it("state get/set works", () => {
@@ -145,5 +145,16 @@ describe("runtime stores", () => {
     });
     expect(d).toBe(10);
     off2();
+  });
+
+  it("readonly store exposes subscribe only and get reads synchronously", () => {
+    const base = writable(1);
+    const ro = readonlyStore(base);
+    const values: number[] = [];
+    const off = ro.subscribe((v) => values.push(v));
+    base.set(4);
+    off();
+    expect(values).toEqual([1, 4]);
+    expect(getStore(ro)).toBe(4);
   });
 });

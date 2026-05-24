@@ -114,7 +114,18 @@ pub fn emit_node(
         }
         TemplateNode::SnippetBlock(block) => {
             let snippet_fn = block.name.clone();
-            let params = block.params.join(", ");
+            let params = block
+                .params
+                .iter()
+                .map(|p| {
+                    if let Some(default) = &p.default_value {
+                        format!("{} = {}", p.pattern, default.source)
+                    } else {
+                        p.pattern.clone()
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join(", ");
             out.push_str(&format!("  function {snippet_fn}({params}) {{\n"));
             out.push_str("    const frag = document.createDocumentFragment();\n");
             for child in &block.body {
@@ -140,7 +151,15 @@ pub fn emit_node(
                 "    while (n && n !== {end}) {{ const next = n.nextSibling; n.parentNode.removeChild(n); n = next; }}\n"
             ));
             out.push_str(&format!("    const __renderTarget = {};\n", block.target));
-            out.push_str("    if (typeof __renderTarget !== 'function') return;\n");
+            if block.optional {
+                out.push_str("    if (__renderTarget == null) return;\n");
+            }
+            out.push_str("    if (typeof __renderTarget !== 'function') {\n");
+            out.push_str(&format!(
+                "      throw new Error(\"Cannot render undefined snippet '{}'\" );\n",
+                block.target.replace('\"', "\\\"")
+            ));
+            out.push_str("    }\n");
             let args = block
                 .args
                 .iter()
@@ -162,6 +181,45 @@ pub fn emit_node(
             deps.sort();
             deps.dedup();
             emit_subscribe_deps(out, "renderSnippet();", &deps);
+        }
+        TemplateNode::HtmlBlock(block) => {
+            let start = ctx.next("html_start");
+            let end = ctx.next("html_end");
+            out.push_str(&format!(
+                "  const {start} = document.createComment('html:start');\n"
+            ));
+            out.push_str(&format!(
+                "  const {end} = document.createComment('html:end');\n"
+            ));
+            out.push_str(&format!("  {parent}.appendChild({start});\n"));
+            out.push_str(&format!("  {parent}.appendChild({end});\n"));
+            out.push_str("  const renderHtml = () => {\n");
+            out.push_str(&format!("    let n = {start}.nextSibling;\n"));
+            out.push_str(&format!(
+                "    while (n && n !== {end}) {{ const next = n.nextSibling; n.parentNode.removeChild(n); n = next; }}\n"
+            ));
+            out.push_str("    const __tpl = document.createElement('template');\n");
+            out.push_str(&format!(
+                "    __tpl.innerHTML = String({});\n",
+                block.expression.source
+            ));
+            out.push_str(&format!(
+                "    {end}.parentNode.insertBefore(__tpl.content, {end});\n"
+            ));
+            out.push_str("  };\n");
+            out.push_str("  renderHtml();\n");
+            emit_subscribe_expr(
+                out,
+                "renderHtml();",
+                &block.expression.source,
+                graph,
+            );
+        }
+        TemplateNode::ConstBlock(block) => {
+            out.push_str(&format!(
+                "  const {} = ({});\n",
+                block.name, block.expression.source
+            ));
         }
         TemplateNode::Component(component) => {
             emit_component_node(component, parent, out, ctx, graph, scope_class)

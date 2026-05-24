@@ -130,3 +130,20 @@ export function derived<S extends Stores, T>(
     };
   });
 }
+
+export function readonly<T>(store: Readable<T>): Readable<T> {
+  return {
+    subscribe(run, invalidate) {
+      return store.subscribe(run, invalidate);
+    },
+  };
+}
+
+export function get<T>(store: Readable<T>): T {
+  let value!: T;
+  const unsub = store.subscribe((v) => {
+    value = v;
+  });
+  unsub();
+  return value;
+}

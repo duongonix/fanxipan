@@ -22,7 +22,7 @@ pub fn analyze_semantics(
 ) -> Vec<SemanticDiagnostic> {
     let mut out = Vec::new();
     let mut scope = ScopeStack::new();
-    let snippet_names = collect_snippet_names(template_nodes);
+    let mut snippet_scope: Vec<BTreeSet<String>> = vec![BTreeSet::new()];
     let symbols = collect_script_symbols(source);
     out.extend(check_mutate_derived(source, &graph.derived));
     out.extend(check_derived_cycles(source, graph));
@@ -32,7 +32,7 @@ pub fn analyze_semantics(
         graph,
         &symbols,
         &mut scope,
-        &snippet_names,
+        &mut snippet_scope,
     ));
     out
 }
@@ -126,7 +126,7 @@ fn check_template_nodes(
     graph: &ReactivityGraph,
     symbols: &[String],
     scope: &mut ScopeStack,
-    snippet_names: &BTreeSet<String>,
+    snippet_scope: &mut Vec<BTreeSet<String>>,
 ) -> Vec<SemanticDiagnostic> {
     let mut out = Vec::new();
     for node in nodes {
@@ -178,10 +178,33 @@ fn check_template_nodes(
                     graph,
                     symbols,
                     scope,
-                    snippet_names,
+                    snippet_scope,
                 ));
             }
             TemplateNode::Component(component) => {
+                let has_children_prop = component
+                    .directives
+                    .iter()
+                    .any(|d| d.kind == "attr" && d.name == "children");
+                let has_children_content = component
+                    .children
+                    .iter()
+                    .any(|n| !matches!(n, TemplateNode::Text(t) if t.value.trim().is_empty()));
+                if has_children_prop && has_children_content {
+                    let (line, column) = (1usize, 1usize);
+                    out.push(SemanticDiagnostic {
+                        message:
+                            "Cannot pass \"children\" prop when component has children content."
+                                .to_string(),
+                        line,
+                        column,
+                        span_start: None,
+                        span_end: None,
+                        suggestion: Some(
+                            "Remove children prop or remove inline children content".to_string(),
+                        ),
+                    });
+                }
                 for d in &component.directives {
                     if !is_supported_component_directive_kind(&d.kind) {
                         let (line, column) = d
@@ -215,14 +238,16 @@ fn check_template_nodes(
                         ));
                     }
                 }
+                snippet_scope.push(BTreeSet::new());
                 out.extend(check_template_nodes(
                     source,
                     &component.children,
                     graph,
                     symbols,
                     scope,
-                    snippet_names,
+                    snippet_scope,
                 ));
+                snippet_scope.pop();
             }
             TemplateNode::IfBlock(block) => {
                 out.extend(check_expression_scope(
@@ -238,7 +263,7 @@ fn check_template_nodes(
                     graph,
                     symbols,
                     scope,
-                    snippet_names,
+                    snippet_scope,
                 ));
                 for elif in &block.elif_blocks {
                     out.extend(check_expression_scope(
@@ -254,7 +279,7 @@ fn check_template_nodes(
                         graph,
                         symbols,
                         scope,
-                        snippet_names,
+                        snippet_scope,
                     ));
                 }
                 if let Some(else_block) = &block.else_block {
@@ -264,7 +289,7 @@ fn check_template_nodes(
                         graph,
                         symbols,
                         scope,
-                        snippet_names,
+                        snippet_scope,
                     ));
                 }
             }
@@ -296,6 +321,7 @@ fn check_template_nodes(
                     scope,
                 ));
                 scope.push_frame();
+                snippet_scope.push(BTreeSet::new());
                 scope.define(block.item.clone());
                 if let Some(idx) = &block.index {
                     scope.define(idx.clone());
@@ -315,8 +341,9 @@ fn check_template_nodes(
                     graph,
                     symbols,
                     scope,
-                    snippet_names,
+                    snippet_scope,
                 ));
+                snippet_scope.pop();
                 scope.pop_frame();
                 if let Some(empty) = &block.empty {
                     out.extend(check_template_nodes(
@@ -325,14 +352,30 @@ fn check_template_nodes(
                         graph,
                         symbols,
                         scope,
-                        snippet_names,
+                        snippet_scope,
                     ));
                 }
             }
             TemplateNode::SnippetBlock(block) => {
+                if let Some(current) = snippet_scope.last_mut() {
+                    if current.contains(&block.name) {
+                        let (line, column) = index_to_line_col(source, block.span.map(|s| s.start).unwrap_or(0));
+                        out.push(SemanticDiagnostic {
+                            message: format!("Duplicate snippet name '{}'.", block.name),
+                            line,
+                            column,
+                            span_start: block.span.map(|s| s.start),
+                            span_end: block.span.map(|s| s.end),
+                            suggestion: Some("Rename snippet or remove duplicate declaration".to_string()),
+                        });
+                    } else {
+                        current.insert(block.name.clone());
+                    }
+                }
                 scope.push_frame();
+                snippet_scope.push(BTreeSet::new());
                 for p in &block.params {
-                    scope.define(p.clone());
+                    scope.define(p.pattern.clone());
                 }
                 out.extend(check_template_nodes(
                     source,
@@ -340,77 +383,74 @@ fn check_template_nodes(
                     graph,
                     symbols,
                     scope,
-                    snippet_names,
+                    snippet_scope,
                 ));
+                snippet_scope.pop();
                 scope.pop_frame();
             }
             TemplateNode::RenderBlock(block) => {
+                let in_scope = snippet_scope
+                    .iter()
+                    .rev()
+                    .any(|set| set.contains(&block.target));
                 if is_plain_identifier(&block.target)
-                    && !snippet_names.contains(&block.target)
+                    && !in_scope
                     && !scope.contains(&block.target)
                     && !symbols.iter().any(|s| s == &block.target)
                     && !is_js_global(&block.target)
                 {
-                    let (line, column) = index_to_line_col(source, 0);
+                    let (line, column) =
+                        index_to_line_col(source, block.span.map(|s| s.start).unwrap_or(0));
                     out.push(SemanticDiagnostic {
-                        message: format!("Unknown snippet/render target '{}'", block.target),
+                        message: format!("Snippet \"{}\" is not in scope.", block.target),
                         line,
                         column,
-                        span_start: None,
-                        span_end: None,
+                        span_start: block.span.map(|s| s.start),
+                        span_end: block.span.map(|s| s.end),
                         suggestion: Some(
-                            "Define snippet via {#snippet name(...)} or pass function via props"
+                            "Declare snippet in current lexical scope or pass it via props"
                                 .to_string(),
                         ),
+                    });
+                }
+                if block.args.is_empty() && !block.target.contains('.') && !block.target.contains('(') {
+                    let (line, column) =
+                        index_to_line_col(source, block.span.map(|s| s.start).unwrap_or(0));
+                    out.push(SemanticDiagnostic {
+                        message: "Render expression must call a snippet.".to_string(),
+                        line,
+                        column,
+                        span_start: block.span.map(|s| s.start),
+                        span_end: block.span.map(|s| s.end),
+                        suggestion: Some("Use {@render name(...)}".to_string()),
                     });
                 }
                 for arg in &block.args {
                     out.extend(check_expression_scope(arg, source, graph, symbols, scope));
                 }
             }
+            TemplateNode::HtmlBlock(block) => {
+                out.extend(check_expression_scope(
+                    &block.expression,
+                    source,
+                    graph,
+                    symbols,
+                    scope,
+                ));
+            }
+            TemplateNode::ConstBlock(block) => {
+                out.extend(check_expression_scope(
+                    &block.expression,
+                    source,
+                    graph,
+                    symbols,
+                    scope,
+                ));
+                scope.define(block.name.clone());
+            }
             _ => {}
         }
     }
-    out
-}
-
-fn collect_snippet_names(nodes: &[TemplateNode]) -> BTreeSet<String> {
-    let mut out = BTreeSet::new();
-    fn walk(nodes: &[TemplateNode], out: &mut BTreeSet<String>) {
-        for node in nodes {
-            match node {
-                TemplateNode::SnippetBlock(block) => {
-                    out.insert(block.name.clone());
-                    walk(&block.body, out);
-                }
-                TemplateNode::Element(el) => walk(&el.children, out),
-                TemplateNode::Component(c) => walk(&c.children, out),
-                TemplateNode::IfBlock(b) => {
-                    walk(&b.consequent, out);
-                    for e in &b.elif_blocks {
-                        walk(&e.consequent, out);
-                    }
-                    if let Some(eb) = &b.else_block {
-                        walk(&eb.consequent, out);
-                    }
-                }
-                TemplateNode::ForBlock(b) => {
-                    walk(&b.body, out);
-                    if let Some(empty) = &b.empty {
-                        walk(&empty.body, out);
-                    }
-                }
-                TemplateNode::AwaitBlock(b) => {
-                    walk(&b.pending, out);
-                    walk(&b.then_body, out);
-                    walk(&b.catch_body, out);
-                }
-                TemplateNode::KeyBlock(b) => walk(&b.body, out),
-                _ => {}
-            }
-        }
-    }
-    walk(nodes, &mut out);
     out
 }
 
@@ -891,7 +931,7 @@ fn index_to_line_col(source: &str, index: usize) -> (usize, usize) {
 mod tests {
     use super::analyze_semantics;
     use crate::analyze_reactivity;
-    use fanxipan_ast::{DirectiveNode, ElementNode, ExpressionNode, ForBlock, TemplateNode};
+    use fanxipan_ast::{DirectiveNode, ElementNode, ExpressionNode, ForBlock, RenderBlock, SnippetBlock, SnippetParam, TemplateNode};
 
     #[test]
     fn detects_invalid_key_expression() {
@@ -1104,5 +1144,67 @@ let b = $derived(a + 1)
                 .iter()
                 .any(|d| d.message.contains("Unknown identifier 'todo'"))
         );
+    }
+
+    #[test]
+    fn reports_snippet_out_of_scope() {
+        let graph = analyze_reactivity("let ok = $state(true)");
+        let nodes = vec![TemplateNode::RenderBlock(RenderBlock {
+            target: "row".to_string(),
+            args: vec![],
+            optional: false,
+            span: None,
+        })];
+        let diags = analyze_semantics("{@render row()}", &nodes, &graph);
+        assert!(diags.iter().any(|d| d.message.contains("is not in scope")));
+    }
+
+    #[test]
+    fn reports_duplicate_snippet_name_same_scope() {
+        let graph = analyze_reactivity("");
+        let snippet = |name: &str| {
+            TemplateNode::SnippetBlock(SnippetBlock {
+                name: name.to_string(),
+                params: vec![SnippetParam {
+                    pattern: "x".to_string(),
+                    default_value: None,
+                    is_rest: false,
+                    span: None,
+                }],
+                body: vec![],
+                span: None,
+            })
+        };
+        let diags = analyze_semantics("", &[snippet("row"), snippet("row")], &graph);
+        assert!(
+            diags
+                .iter()
+                .any(|d| d.message.contains("Duplicate snippet name"))
+        );
+    }
+
+    #[test]
+    fn snippet_inside_component_children_is_not_visible_outside() {
+        let graph = analyze_reactivity("");
+        let nodes = vec![
+            TemplateNode::Component(fanxipan_ast::ComponentNode {
+                name: "Table".to_string(),
+                directives: vec![],
+                children: vec![TemplateNode::SnippetBlock(SnippetBlock {
+                    name: "row".to_string(),
+                    params: vec![],
+                    body: vec![],
+                    span: None,
+                })],
+            }),
+            TemplateNode::RenderBlock(RenderBlock {
+                target: "row".to_string(),
+                args: vec![],
+                optional: false,
+                span: None,
+            }),
+        ];
+        let diags = analyze_semantics("", &nodes, &graph);
+        assert!(diags.iter().any(|d| d.message.contains("is not in scope")));
     }
 }

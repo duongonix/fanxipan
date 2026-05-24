@@ -42,6 +42,7 @@ function App() {
         <p>Projected by slot: count = {count}</p>
       </Comp>
 
+
       <form onsubmit|preventDefault={addItem}>
         <input bind:value={query} placeholder="New todo..." />
         <button>Add</button>

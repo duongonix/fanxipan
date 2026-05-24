@@ -4,11 +4,12 @@ import { compileWithNative } from "./native.js";
 
 export function compile(source: string, options: CompileOptions): CompileResult {
   const legacyFormatDiagnostics = detectLegacySectionFormat(source, options.filename);
+  const scriptDiagnostics = detectLikelyScriptReferenceErrors(source, options.filename);
   const normalizedSource = normalizeFanxiSource(source, options.filename);
   const nativeResult = compileWithNative(normalizedSource, options.filename);
   const finish = (result: CompileResult): CompileResult => ({
     ...result,
-    diagnostics: dedupeCompilerDiagnostics([...result.diagnostics, ...legacyFormatDiagnostics]),
+    diagnostics: dedupeCompilerDiagnostics([...result.diagnostics, ...legacyFormatDiagnostics, ...scriptDiagnostics]),
     map: {
       ...result.map,
       sourcesContent: [source],
@@ -21,6 +22,127 @@ export function compile(source: string, options: CompileOptions): CompileResult 
     return finish(injectHmr(normalized, options.hmr ?? true, options.filename));
   }
   return finish(injectHmr(compileWithFallbackTs(normalizedSource, options), options.hmr ?? true, options.filename));
+}
+
+function detectLikelyScriptReferenceErrors(source: string, filename: string): CompilerDiagnostic[] {
+  const diagnostics: CompilerDiagnostic[] = [];
+  const lines = source.split("\n");
+  const declared = new Set<string>();
+  const known = new Set(["undefined", "null", "true", "false", "NaN", "Infinity"]);
+  const reserved = new Set([
+    "return",
+    "if",
+    "else",
+    "for",
+    "while",
+    "switch",
+    "case",
+    "break",
+    "continue",
+    "const",
+    "let",
+    "var",
+    "function",
+    "export",
+    "import",
+    "try",
+    "catch",
+    "finally",
+    "throw",
+    "new",
+    "typeof",
+    "instanceof",
+    "in",
+    "of",
+    "await",
+    "async",
+  ]);
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    const varMatch = trimmed.match(/^(?:let|const|var)\s+([A-Za-z_$][A-Za-z0-9_$]*)\b/);
+    if (varMatch) declared.add(varMatch[1]);
+    const fnMatch = trimmed.match(/^function\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*\(/);
+    if (fnMatch) declared.add(fnMatch[1]);
+    if (trimmed.startsWith("import ")) {
+      const fromIdx = trimmed.indexOf(" from ");
+      const importPart = fromIdx >= 0 ? trimmed.slice(6, fromIdx).trim() : trimmed.slice(6).trim();
+      if (importPart.startsWith("{") && importPart.endsWith("}")) {
+        for (const p of importPart.slice(1, -1).split(",")) {
+          const name = p.trim().split(/\s+as\s+/i).pop()?.trim();
+          if (name && /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name)) declared.add(name);
+        }
+      } else if (importPart.length > 0 && /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(importPart)) {
+        declared.add(importPart);
+      }
+    }
+  }
+
+  for (let i = 0; i < lines.length; i += 1) {
+    const raw = lines[i] ?? "";
+    const trimmed = raw.trim();
+    if (!trimmed) continue;
+    if (trimmed.startsWith("//")) continue;
+    if (trimmed.startsWith("import ")) continue;
+    if (/^(?:let|const|var|function|return|if|for|while|switch|export)\b/.test(trimmed)) continue;
+    // Common typo: stray identifier statement like ";s" or "s;" after a valid line.
+    const bare = trimmed.match(/^;?\s*([A-Za-z_$][A-Za-z0-9_$]*)\s*;?\s*$/);
+    if (!bare) continue;
+    const ident = bare[1];
+    if (declared.has(ident) || known.has(ident) || reserved.has(ident)) continue;
+    const line = i + 1;
+    const column = Math.max(1, raw.indexOf(ident) + 1);
+    const spanStart = source.split("\n").slice(0, i).join("\n").length + (i > 0 ? 1 : 0) + Math.max(0, raw.indexOf(ident));
+    const spanEnd = spanStart + ident.length;
+    diagnostics.push({
+      severity: "error",
+      code: "fanxipan_SCRIPT_UNKNOWN_IDENTIFIER",
+      message: `Unknown identifier '${ident}' in script scope`,
+      filename,
+      line,
+      column,
+      spanStart,
+      spanEnd,
+      suggestion: "Remove stray token or declare the identifier before use.",
+      frame: formatCodeFrame(source, filename, line, column, spanStart, spanEnd),
+    });
+  }
+
+  // Also catch trailing stray identifiers on the same line, e.g.:
+  // let doubled = $derived(count * 2);s
+  for (let i = 0; i < lines.length; i += 1) {
+    const raw = lines[i] ?? "";
+    const trimmed = raw.trim();
+    if (!trimmed) continue;
+    if (trimmed.startsWith("//")) continue;
+    if (trimmed.startsWith("import ")) continue;
+    const m =
+      raw.match(/;\s*([A-Za-z_$][A-Za-z0-9_$]*)\s*$/) ||
+      raw.match(/\)\s*([A-Za-z_$][A-Za-z0-9_$]*)\s*$/) ||
+      raw.match(/\+\+\s*([A-Za-z_$][A-Za-z0-9_$]*)\s*$/) ||
+      raw.match(/--\s*([A-Za-z_$][A-Za-z0-9_$]*)\s*$/);
+    if (!m) continue;
+    const ident = m[1];
+    if (declared.has(ident) || known.has(ident) || reserved.has(ident)) continue;
+    const line = i + 1;
+    const column = Math.max(1, raw.lastIndexOf(ident) + 1);
+    const spanStart = source.split("\n").slice(0, i).join("\n").length + (i > 0 ? 1 : 0) + Math.max(0, raw.lastIndexOf(ident));
+    const spanEnd = spanStart + ident.length;
+    diagnostics.push({
+      severity: "error",
+      code: "fanxipan_SCRIPT_UNKNOWN_IDENTIFIER",
+      message: `Unknown identifier '${ident}' in script scope`,
+      filename,
+      line,
+      column,
+      spanStart,
+      spanEnd,
+      suggestion: "Remove stray token or declare the identifier before use.",
+      frame: formatCodeFrame(source, filename, line, column, spanStart, spanEnd),
+    });
+  }
+
+  return diagnostics;
 }
 
 function detectLegacySectionFormat(source: string, filename: string): CompilerDiagnostic[] {
@@ -545,16 +667,18 @@ function extractComponentSetup(source: string): {
   setup: string;
   derivedExprs: Map<string, string>;
   effectCalls: Array<{ fn: string; deps: string[] }>;
+  bindables: Array<{ name: string; fallback?: string }>;
 } {
   const derivedExprs = new Map<string, string>();
   const effectCalls: Array<{ fn: string; deps: string[] }> = [];
+  const bindables = new Map<string, string | undefined>();
   const imports = source
     .split("\n")
     .map((line) => line.trim())
     .filter((line) => line.startsWith("import "));
   const headerMatch = source.match(/function\s+[A-Za-z_][A-Za-z0-9_]*\s*\(([^)]*)\)\s*\{/m);
   const match = source.match(/function\s+[A-Za-z_][A-Za-z0-9_]*\s*\([^)]*\)\s*\{([\s\S]*?)return\s*\(/m);
-  if (!match) return { imports, setup: "", derivedExprs, effectCalls };
+  if (!match) return { imports, setup: "", derivedExprs, effectCalls, bindables: [] };
   const param = (headerMatch?.[1] ?? "").trim();
   const body = match[1] ?? "";
   const rawLines = splitSetupStatements(body)
@@ -562,11 +686,18 @@ function extractComponentSetup(source: string): {
     .filter((line) => line.length > 0)
     .filter((line) => !line.startsWith("import ") && !line.startsWith("export "));
   const paramPrelude = buildParamPrelude(param);
+  for (const b of paramPrelude.bindables) bindables.set(b.name, b.fallback);
   if (rawLines.length === 0) {
-    const setup = paramPrelude
+    const setup = paramPrelude.lines
       .map((line) => (line.endsWith(";") ? line : `${line};`))
       .join("\n");
-    return { imports, setup, derivedExprs, effectCalls };
+    return {
+      imports,
+      setup: injectBindableBridge(setup, bindables),
+      derivedExprs,
+      effectCalls,
+      bindables: Array.from(bindables.entries()).map(([name, fallback]) => ({ name, fallback })),
+    };
   }
   const lines: string[] = [];
   const stateNames: string[] = [];
@@ -593,12 +724,37 @@ function extractComponentSetup(source: string): {
       effectCalls.push({ fn: effectArg, deps });
       continue;
     }
+    const bindableMatch = line.match(
+      /^let\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*\$bindable\(\s*([\s\S]*?)\s*\)\s*;?$/
+    );
+    if (bindableMatch) {
+      bindables.set(
+        bindableMatch[1],
+        bindableMatch[2] && bindableMatch[2].trim().length > 0
+          ? bindableMatch[2].trim()
+          : undefined
+      );
+      lines.push(
+        `let ${bindableMatch[1]} = (props.${bindableMatch[1]} ?? ${
+          bindableMatch[2] && bindableMatch[2].trim().length > 0
+            ? bindableMatch[2].trim()
+            : "undefined"
+        })`
+      );
+      continue;
+    }
     lines.push(line);
   }
-  const setup = [...paramPrelude, ...lines]
+  const setup = [...paramPrelude.lines, ...lines]
     .map((line) => ensureStatementTerminator(line))
     .join("\n");
-  return { imports, setup, derivedExprs, effectCalls };
+  return {
+    imports,
+    setup: injectBindableBridge(setup, bindables),
+    derivedExprs,
+    effectCalls,
+    bindables: Array.from(bindables.entries()).map(([name, fallback]) => ({ name, fallback })),
+  };
 }
 
 function splitSetupStatements(source: string): string[] {
@@ -647,19 +803,91 @@ function ensureStatementTerminator(line: string): string {
   return `${trimmed};`;
 }
 
-function buildParamPrelude(param: string): string[] {
-  if (!param) return [];
+function buildParamPrelude(param: string): {
+  lines: string[];
+  bindables: Array<{ name: string; fallback?: string }>;
+} {
+  if (!param) return { lines: [], bindables: [] };
+  const singleBindable = param.match(
+    /^([A-Za-z_$][A-Za-z0-9_$]*)\s*=\s*\$bindable\(\s*([\s\S]*?)\s*\)$/
+  );
+  if (singleBindable) {
+    const name = singleBindable[1];
+    const fallback =
+      singleBindable[2] && singleBindable[2].trim().length > 0
+        ? singleBindable[2].trim()
+        : undefined;
+    return {
+      lines: [
+        `let ${name}`,
+        `const __fanxipan_bind_props = () => (${name} = (props.${name} ?? ${
+          fallback ?? "undefined"
+        }))`,
+      ],
+      bindables: [{ name, fallback }],
+    };
+  }
   if (param.startsWith("{") && param.endsWith("}")) {
     const names = extractDestructuredNames(param);
-    if (names.length === 0) return [];
+    if (names.length === 0) return { lines: [], bindables: [] };
     const lets = names.map((name) => `let ${name}`);
     const assign = `const __fanxipan_bind_props = () => (${param} = props)`;
-    return [...lets, assign];
+    const bindables = extractDestructuredBindableEntries(param);
+    return { lines: [...lets, assign], bindables };
   }
   if (/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(param) && param !== "props") {
-    return [`let ${param}`, `const __fanxipan_bind_props = () => (${param} = props)`];
+    return {
+      lines: [`let ${param}`, `const __fanxipan_bind_props = () => (${param} = props)`],
+      bindables: [],
+    };
   }
-  return [];
+  return { lines: [], bindables: [] };
+}
+
+function extractDestructuredBindableEntries(
+  param: string
+): Array<{ name: string; fallback?: string }> {
+  const inner = param.slice(1, -1).trim();
+  if (!inner) return [];
+  const out: Array<{ name: string; fallback?: string }> = [];
+  for (const partRaw of inner.split(",")) {
+    const part = partRaw.trim();
+    if (!part || part.startsWith("...")) continue;
+    const [lhs, rhs] = part.split("=").map((v) => v?.trim());
+    if (!rhs || !rhs.startsWith("$bindable(")) continue;
+    const local = (lhs.includes(":") ? lhs.split(":")[1] : lhs).trim();
+    if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(local)) continue;
+    const fallback = extractCallArg(rhs, "$bindable(") ?? "";
+    out.push({
+      name: local,
+      fallback: fallback.trim().length > 0 ? fallback.trim() : undefined,
+    });
+  }
+  return out;
+}
+
+function injectBindableBridge(
+  setup: string,
+  bindables: Map<string, string | undefined>
+): string {
+  if (bindables.size === 0) return setup;
+  const body: string[] = [setup];
+  body.push("const __fanxipan_emit_bindable = (dep) => {");
+  body.push("  if (!props || typeof dep !== 'string') return;");
+  for (const [name] of bindables.entries()) {
+    const cap = `${name.charAt(0).toUpperCase()}${name.slice(1)}`;
+    body.push(`  if (dep === ${JSON.stringify(name)}) {`);
+    body.push(`    props[${JSON.stringify(name)}] = ${name};`);
+    body.push(
+      `    const __fanxipan_cb = props[${JSON.stringify(
+        `on${cap}Change`
+      )}] || props[${JSON.stringify(`on${name}change`)}];`
+    );
+    body.push("    if (typeof __fanxipan_cb === 'function') __fanxipan_cb(" + name + ");");
+    body.push("  }");
+  }
+  body.push("};");
+  return body.join("\n");
 }
 
 function extractDestructuredNames(param: string): string[] {
@@ -722,8 +950,9 @@ function injectEffectHookIntoWrapper(code: string): string {
     "    };",
     "    const __fanxipan_notify = typeof ctx.notify === 'function' ? ctx.notify.bind(ctx) : null;",
     "    const __fanxipan_notifyMany = typeof ctx.notifyMany === 'function' ? ctx.notifyMany.bind(ctx) : null;",
-    "    if (__fanxipan_notify) ctx.notify = (dep) => { __fanxipan_notify(dep); __fanxipan_schedule([dep]); };",
-    "    if (__fanxipan_notifyMany) ctx.notifyMany = (deps) => { __fanxipan_notifyMany(deps); __fanxipan_schedule(Array.isArray(deps) ? deps : []); };",
+    "    const __fanxipan_emit_bindable_local = (typeof __fanxipan_emit_bindable === 'function') ? __fanxipan_emit_bindable : null;",
+    "    if (__fanxipan_notify) ctx.notify = (dep) => { __fanxipan_notify(dep); if (__fanxipan_emit_bindable_local) __fanxipan_emit_bindable_local(dep); __fanxipan_schedule([dep]); };",
+    "    if (__fanxipan_notifyMany) ctx.notifyMany = (deps) => { __fanxipan_notifyMany(deps); if (__fanxipan_emit_bindable_local && Array.isArray(deps)) { for (const dep of deps) __fanxipan_emit_bindable_local(dep); } __fanxipan_schedule(Array.isArray(deps) ? deps : []); };",
     "    __fanxipan_schedule(null);",
     "    return () => {",
     "      if (__fanxipan_notify) ctx.notify = __fanxipan_notify;",

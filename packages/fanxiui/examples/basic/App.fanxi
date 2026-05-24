@@ -1,0 +1,25 @@
+import { Accordion, Collapsible } from "fanxiui";
+
+function App() {
+  return (
+    <div>
+      <Collapsible.Root defaultOpen={false}>
+        <Collapsible.Trigger>Toggle info</Collapsible.Trigger>
+        <Collapsible.Content>Hidden content</Collapsible.Content>
+      </Collapsible.Root>
+
+      <Accordion.Root type="single" collapsible={true} defaultValue="item-1">
+        <Accordion.Item value="item-1">
+          <Accordion.Trigger>Section 1</Accordion.Trigger>
+          <Accordion.Content>Content 1</Accordion.Content>
+        </Accordion.Item>
+        <Accordion.Item value="item-2">
+          <Accordion.Trigger>Section 2</Accordion.Trigger>
+          <Accordion.Content>Content 2</Accordion.Content>
+        </Accordion.Item>
+      </Accordion.Root>
+    </div>
+  );
+}
+
+export default App;

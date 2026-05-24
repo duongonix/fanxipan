@@ -40,6 +40,8 @@ pub enum TemplateNode {
     KeyBlock(KeyBlock),
     SnippetBlock(SnippetBlock),
     RenderBlock(RenderBlock),
+    HtmlBlock(HtmlBlock),
+    ConstBlock(ConstBlock),
     Component(ComponentNode),
 }
 
@@ -114,14 +116,38 @@ pub struct KeyBlock {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SnippetBlock {
     pub name: String,
-    pub params: Vec<String>,
+    pub params: Vec<SnippetParam>,
     pub body: Vec<TemplateNode>,
+    pub span: Option<Span>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SnippetParam {
+    pub pattern: String,
+    pub default_value: Option<ExpressionNode>,
+    pub is_rest: bool,
+    pub span: Option<Span>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RenderBlock {
     pub target: String,
     pub args: Vec<ExpressionNode>,
+    pub optional: bool,
+    pub span: Option<Span>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct HtmlBlock {
+    pub expression: ExpressionNode,
+    pub span: Option<Span>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ConstBlock {
+    pub name: String,
+    pub expression: ExpressionNode,
+    pub span: Option<Span>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -379,6 +379,14 @@ fn semantic_code(message: &str) -> String {
         "fanxipan_SEM_MUTATE_DERIVED".to_string()
     } else if message.contains("Unknown identifier") {
         "fanxipan_SEM_UNKNOWN_IDENTIFIER".to_string()
+    } else if message.contains("Snippet \"") && message.contains("is not in scope") {
+        "fanxipan_SEM_SNIPPET_OUT_OF_SCOPE".to_string()
+    } else if message.contains("Duplicate snippet name") {
+        "fanxipan_SEM_SNIPPET_DUPLICATE".to_string()
+    } else if message.contains("Render expression must call a snippet") {
+        "fanxipan_SEM_RENDER_CALL_REQUIRED".to_string()
+    } else if message.contains("Cannot pass \"children\" prop") {
+        "fanxipan_SEM_CHILDREN_PROP_CONFLICT".to_string()
     } else if message.contains("Unknown directive") {
         "fanxipan_SEM_UNKNOWN_DIRECTIVE".to_string()
     } else if message.contains("Invalid bind target") {
@@ -500,6 +508,59 @@ function App() {
         assert!(out.code.contains("mountComponent"));
         assert!(out.code.contains("\"user\""));
         assert!(out.code.contains("component:UserCard"));
+    }
+
+    #[test]
+    fn component_bind_emits_on_change_callback_prop() {
+        let src = r#"
+function App() {
+  let name = $state("A")
+  return (
+    <div>
+      <Child bind:value={name} />
+    </div>
+  )
+}
+"#;
+        let out = compile(
+            src,
+            CompileOptions {
+                filename: "BindComponent.fanxi".to_string(),
+            },
+        );
+        assert!(out.code.contains("\"value\": name"));
+        assert!(out.code.contains("\"onValueChange\": (next) => { name = next; if (ctx.notify) ctx.notify(\"name\"); }"));
+    }
+
+    #[test]
+    fn compiles_implicit_named_snippet_props_inside_component_children() {
+        let src = r#"
+function App() {
+  let users = $state([{ id: 1, name: "Ada" }])
+  return (
+    <Table data={users}>
+      {#snippet header()}
+        <th>Name</th>
+      {/snippet}
+      {#snippet row(user)}
+        <td>{user.name}</td>
+      {/snippet}
+      <p>fallback child</p>
+    </Table>
+  )
+}
+"#;
+        let out = compile(
+            src,
+            CompileOptions {
+                filename: "SnippetProps.fanxi".to_string(),
+            },
+        );
+        assert!(out.code.contains("function header("));
+        assert!(out.code.contains("function row("));
+        assert!(out.code.contains("[\"header\"] = header"));
+        assert!(out.code.contains("[\"row\"] = row"));
+        assert!(out.code.contains("fallback child"));
     }
 
     #[test]
@@ -919,7 +980,32 @@ function App() {
         assert!(
             out.diagnostics
                 .iter()
-                .any(|d| d.message.contains("Unknown snippet/render target"))
+                .any(|d| d.message.contains("is not in scope"))
+        );
+    }
+
+    #[test]
+    fn reports_children_prop_conflict_with_inline_children_content() {
+        let src = r#"
+function App() {
+  let snippet = $state(() => null)
+  return (
+    <Card children={snippet}>
+      <p>hello</p>
+    </Card>
+  )
+}
+"#;
+        let out = compile(
+            src,
+            CompileOptions {
+                filename: "ChildrenConflict.fanxi".to_string(),
+            },
+        );
+        assert!(
+            out.diagnostics
+                .iter()
+                .any(|d| d.message.contains("Cannot pass \"children\" prop"))
         );
     }
 
@@ -1097,5 +1183,57 @@ function App() {
         );
         assert!(out.code.contains("document.createElement('template')"));
         assert!(out.code.contains("hello"));
+    }
+
+    #[test]
+    fn compiles_html_block() {
+        let src = r#"
+function App() {
+  let raw = $state("<button>ok</button>")
+  return (
+    <div>
+      {@html raw}
+    </div>
+  )
+}
+"#;
+        let out = compile(
+            src,
+            CompileOptions {
+                filename: "HtmlBlock.fanxi".to_string(),
+            },
+        );
+        assert!(out.code.contains("html:start"));
+        assert!(out.code.contains("__tpl.innerHTML = String(raw);"));
+        assert!(out.code.contains("renderHtml();"));
+    }
+
+    #[test]
+    fn compiles_const_block_inside_for() {
+        let src = r#"
+function App() {
+  let boxes = $state([{ width: 2, height: 3 }])
+  return (
+    <div>
+      {#for box in boxes}
+        {@const area = box.width * box.height}
+        <p>{box.width} * {box.height} = {area}</p>
+      {/for}
+    </div>
+  )
+}
+"#;
+        let out = compile(
+            src,
+            CompileOptions {
+                filename: "ConstBlock.fanxi".to_string(),
+            },
+        );
+        assert!(
+            out.diagnostics
+                .iter()
+                .all(|d| !d.message.contains("Unknown identifier 'area'"))
+        );
+        assert!(out.code.contains("const area = (box.width * box.height);"));
     }
 }

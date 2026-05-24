@@ -64,7 +64,7 @@ function BumpFanxipanVersions([string]$repoRoot, [string]$version) {
       }
     }
 
-    foreach ($section in @("dependencies", "devDependencies", "peerDependencies", "optionalDependencies")) {
+    foreach ($section in @("dependencies", "devDependencies", "optionalDependencies")) {
       if (-not ($obj.PSObject.Properties.Name -contains $section)) { continue }
       $depObj = $obj.$section
       if ($null -eq $depObj) { continue }

@@ -1,0 +1,25 @@
+function Panel(props) {
+  return (
+    <section>
+      <h2>{props.title}</h2>
+      {@render props.body?.()}
+      {#if props.footer}
+        {@render props.footer()}
+      {:else}
+        <p>No footer</p>
+      {/if}
+    </section>
+  )
+}
+
+function App() {
+  return (
+    <Panel title="Optional snippet demo">
+      {#snippet body()}
+        <p>Panel body</p>
+      {/snippet}
+    </Panel>
+  )
+}
+
+export default App

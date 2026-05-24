@@ -1,0 +1,67 @@
+import { Dialog } from "fanxiui";
+import { AlertDialog } from "fanxiui";
+import { Popover } from "fanxiui";
+import { Tooltip } from "fanxiui";
+import { HoverCard } from "fanxiui";
+import { DropdownMenu } from "fanxiui";
+import { ContextMenu } from "fanxiui";
+import { Menu } from "fanxiui";
+import { Select } from "fanxiui";
+import { Combobox } from "fanxiui";
+import { Listbox } from "fanxiui";
+import { Tabs } from "fanxiui";
+import { Accordion } from "fanxiui";
+import { Collapsible } from "fanxiui";
+import { Checkbox } from "fanxiui";
+import { Switch } from "fanxiui";
+import { RadioGroup } from "fanxiui";
+import { Toggle } from "fanxiui";
+import { ToggleGroup } from "fanxiui";
+import { Progress } from "fanxiui";
+import { Slider } from "fanxiui";
+import { Toast } from "fanxiui";
+import { ScrollArea } from "fanxiui";
+import { Avatar } from "fanxiui";
+import { Label } from "fanxiui";
+import { Separator } from "fanxiui";
+import { Home, Search, User } from "fanxicon";
+
+let CheckboxRoot = Checkbox.Root;
+let CheckboxIndicator = Checkbox.Indicator;
+let SwitchRoot = Switch.Root;
+let SwitchThumb = Switch.Thumb;
+let RadioGroupRoot = RadioGroup.Root;
+let RadioGroupItem = RadioGroup.Item;
+
+function App() {
+  return (
+    <main style="font-family:ui-sans-serif,system-ui;padding:20px;max-width:1100px;margin:0 auto;color:#0f172a;">
+      <h1 style="margin:0 0 16px;">FanxiUI Full Showcase</h1>
+      <p style="margin:0 0 18px;color:#475569;">Headless primitives demo (Phase 1 to Phase 7).</p>
+
+      <section style="border:1px solid #e2e8f0;border-radius:12px;padding:14px;margin-bottom:14px;">
+        <h2 style="margin:0 0 10px;font-size:16px;">Basics: Label / Separator / Icons</h2>
+        <Label><span style="margin-right:8px;">Search:</span><input placeholder="Type here..." /></Label>
+        <Separator orientation="horizontal" style="margin:10px 0;border-top:1px dashed #cbd5e1;" />
+        <div style="display:flex;gap:10px;color:#60a5fa;"><Home /><Search size={20} /><User strokeWidth={1.5} /></div>
+      </section>
+
+      <section style="border:1px solid #e2e8f0;border-radius:12px;padding:14px;margin-bottom:14px;">
+        <h2 style="margin:0 0 10px;font-size:16px;">Checkbox / Switch / RadioGroup</h2>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <CheckboxRoot defaultChecked={true}><CheckboxIndicator>v</CheckboxIndicator></CheckboxRoot>
+          <SwitchRoot defaultChecked={true}><SwitchThumb /></SwitchRoot>
+          <RadioGroupRoot defaultValue="a"><RadioGroupItem value="a">A</RadioGroupItem><RadioGroupItem value="b">B</RadioGroupItem></RadioGroupRoot>
+        </div>
+      </section>
+
+      <section style="border:1px solid #e2e8f0;border-radius:12px;padding:14px;margin-bottom:14px;">
+        <h2 style="margin:0 0 10px;font-size:16px;">Other primitives are included in package fanxiui</h2>
+        <p>Dialog, Tabs, Accordion, Menu, Select, Combobox, Toast, ScrollArea, Avatar, and more are available.</p>
+      </section>
+    </main>
+  );
+}
+
+export default App;
+

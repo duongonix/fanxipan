@@ -1,0 +1,16 @@
+import { Tabs } from "fanxiui";
+
+function App() {
+  return (
+    <Tabs.Root defaultValue="a">
+      <Tabs.List>
+        <Tabs.Trigger value="a">A</Tabs.Trigger>
+        <Tabs.Trigger value="b">B</Tabs.Trigger>
+      </Tabs.List>
+      <Tabs.Content value="a">Tab A</Tabs.Content>
+      <Tabs.Content value="b">Tab B</Tabs.Content>
+    </Tabs.Root>
+  );
+}
+
+export default App;

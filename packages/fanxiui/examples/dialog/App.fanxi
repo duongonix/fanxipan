@@ -1,0 +1,19 @@
+import { Dialog } from "fanxiui";
+
+function App() {
+  return (
+    <Dialog.Root defaultOpen={false}>
+      <Dialog.Trigger>Open Dialog</Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Overlay class="overlay" />
+        <Dialog.Content class="content">
+          <Dialog.Title>Hello</Dialog.Title>
+          <Dialog.Description>Dialog content</Dialog.Description>
+          <Dialog.Close>Close</Dialog.Close>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
+
+export default App;

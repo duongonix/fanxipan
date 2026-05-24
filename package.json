@@ -13,7 +13,11 @@
     "build:fanxikit:phase4": "pnpm --filter fanxikit build && pnpm --filter fanxikit-vite build && pnpm --filter fanxi-adapter-node build && pnpm --filter fanxi-adapter-static build && pnpm --filter fanxi-adapter-cloudflare build",
     "build:fanxikit:phase5": "pnpm --filter fanxikit build && pnpm --filter fanxikit-vite build && pnpm --filter fanxi-adapter-node build && pnpm --filter fanxi-adapter-static build && pnpm --filter fanxi-adapter-cloudflare build && pnpm --filter fanxi-adapter-vercel build && pnpm --filter fanxi-adapter-netlify build",
     "build:fanxikit": "pnpm run build:fanxikit:phase5 && pnpm --filter @examples/fanxikit build",
+    "build:fanxicon": "pnpm --filter fanxicon build",
+    "build:fanxiui": "pnpm --filter fanxiui build",
     "test:fanxikit": "pnpm --filter fanxikit test && pnpm --filter @examples/fanxikit verify",
+    "test:fanxicon": "pnpm --filter fanxicon test",
+    "test:fanxiui": "pnpm --filter fanxiui test",
     "test:fanxikit:phase1": "pnpm --filter fanxikit test",
     "demo:fanxikit:manifest": "pnpm --filter @examples/fanxikit-phase1 manifest",
     "demo:fanxikit:adapter": "pnpm --filter @examples/fanxikit-phase1 adapter",
@@ -48,6 +52,8 @@
     "vitest": "^2.1.0",
     "vite": "^6.0.0",
     "tsup": "^8.3.0",
+    "tinyglobby": "^0.2.14",
+    "rollup": "^4.52.5",
     "@types/node": "^22.10.0",
     "playwright": "^1.54.0"
   }

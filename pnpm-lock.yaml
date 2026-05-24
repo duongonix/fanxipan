@@ -14,6 +14,12 @@ importers:
       playwright:
         specifier: ^1.54.0
         version: 1.60.0
+      rollup:
+        specifier: ^4.52.5
+        version: 4.60.4
+      tinyglobby:
+        specifier: ^0.2.14
+        version: 0.2.16
       tsup:
         specifier: ^8.3.0
         version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(typescript@5.9.3)
@@ -33,6 +39,12 @@ importers:
         specifier: workspace:*
         version: link:../packages/fanxipan
     devDependencies:
+      '@tailwindcss/vite':
+        specifier: ^4.3.0
+        version: 4.3.0(vite@6.4.2(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0))
+      tailwindcss:
+        specifier: ^4.3.0
+        version: 4.3.0
       typescript:
         specifier: ^5.8.0
         version: 5.9.3
@@ -55,6 +67,22 @@ importers:
       tailwindcss:
         specifier: ^4.1.0
         version: 4.3.0
+      vite:
+        specifier: ^6.0.0
+        version: 6.4.2(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)
+      vite-plugin-fanxipan:
+        specifier: workspace:*
+        version: link:../../packages/vite-plugin-fanxipan
+
+  examples/fanxicon:
+    dependencies:
+      fanxicon:
+        specifier: workspace:*
+        version: link:../../packages/fanxicon
+      fanxipan:
+        specifier: workspace:*
+        version: link:../../packages/fanxipan
+    devDependencies:
       vite:
         specifier: ^6.0.0
         version: 6.4.2(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)
@@ -98,6 +126,25 @@ importers:
         specifier: workspace:*
         version: link:../../packages/fanxikit
 
+  examples/fanxiui:
+    dependencies:
+      fanxicon:
+        specifier: workspace:*
+        version: link:../../packages/fanxicon
+      fanxipan:
+        specifier: workspace:*
+        version: link:../../packages/fanxipan
+      fanxiui:
+        specifier: workspace:*
+        version: link:../../packages/fanxiui
+    devDependencies:
+      vite:
+        specifier: ^6.0.0
+        version: 6.4.2(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)
+      vite-plugin-fanxipan:
+        specifier: workspace:*
+        version: link:../../packages/vite-plugin-fanxipan
+
   examples/playground:
     dependencies:
       fanxipan:
@@ -112,19 +159,6 @@ importers:
         version: link:../../packages/vite-plugin-fanxipan
 
   examples/router:
-    dependencies:
-      fanxipan:
-        specifier: workspace:*
-        version: link:../../packages/fanxipan
-    devDependencies:
-      vite:
-        specifier: ^6.0.0
-        version: 6.4.2(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)
-      vite-plugin-fanxipan:
-        specifier: workspace:*
-        version: link:../../packages/vite-plugin-fanxipan
-
-  examples/ssr:
     dependencies:
       fanxipan:
         specifier: workspace:*
@@ -182,6 +216,18 @@ importers:
 
   packages/devtools: {}
 
+  packages/fanxicon:
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.19.19
+      tsup:
+        specifier: ^8.3.0
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.8.0
+        version: 5.9.3
+
   packages/fanxikit:
     dependencies:
       '@fanxipan/compiler':
@@ -217,6 +263,19 @@ importers:
       '@napi-rs/cli':
         specifier: ^2.18.4
         version: 2.18.4
+      typescript:
+        specifier: ^5.8.0
+        version: 5.9.3
+
+  packages/fanxiui:
+    dependencies:
+      fanxipan:
+        specifier: '>=0.1.0'
+        version: 1.0.9
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.19.19
       typescript:
         specifier: ^5.8.0
         version: 5.9.3
@@ -692,6 +751,18 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@fanxipan/compiler@1.0.9':
+    resolution: {integrity: sha512-n/JzlYsflQIYpRSg6OHl3bKAEfW+hMUP6Wp6evJiKJRQWVwSAlbTGaf1cg0AkceFhLmvmTqE8bVpCsluWdCDsQ==}
+
+  '@fanxipan/node@1.0.9':
+    resolution: {integrity: sha512-M0vZeDBQgqGvO7GhlgAu3aOeDS5PtMdeMI3KH1GLxyypEQwOyzgJKMtMokmsV/PVB5lhJ7GFmXboxz0kuZDLIg==}
+
+  '@fanxipan/router@1.0.9':
+    resolution: {integrity: sha512-lcas47DnDxWyKnvoxmFcz2DA0xH1Y7viaaxJ1cRZ5/QL8Pv1WbzaRx66v/cuAoIZeupBFS7/eb0wVtfr5436og==}
+
+  '@fanxipan/runtime@1.0.9':
+    resolution: {integrity: sha512-ENLlcP5V+6EImmrSSvyOXOq8WQP0Stk5dgncYKSjK1oD0vS5ngOdnPHahN65UHxqc9OKYjRCbP7Cz7dFUBiQpw==}
+
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
 
@@ -1056,6 +1127,9 @@ packages:
   expect-type@1.3.0:
     resolution: {integrity: sha512-knvyeauYhqjOYvQ66MznSMs83wmHrCycNEN6Ao+2AeYEfxUIkuiVxdEa1qlGEPK+We3n0THiDciYSsCcgW/DoA==}
     engines: {node: '>=12.0.0'}
+
+  fanxipan@1.0.9:
+    resolution: {integrity: sha512-QfA3quEaMC4VED6j5/Z+OFcqCse8FyROD0DQRMT33n2vUsSm9RwSHfuWhXWYYCp7w5Gr+Wm7NSUtFJNxc9i0jA==}
 
   fdir@6.5.0:
     resolution: {integrity: sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg==}
@@ -1692,6 +1766,18 @@ snapshots:
   '@esbuild/win32-x64@0.27.7':
     optional: true
 
+  '@fanxipan/compiler@1.0.9':
+    dependencies:
+      '@fanxipan/node': 1.0.9
+
+  '@fanxipan/node@1.0.9': {}
+
+  '@fanxipan/router@1.0.9':
+    dependencies:
+      '@fanxipan/runtime': 1.0.9
+
+  '@fanxipan/runtime@1.0.9': {}
+
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
@@ -2041,6 +2127,12 @@ snapshots:
       '@types/estree': 1.0.9
 
   expect-type@1.3.0: {}
+
+  fanxipan@1.0.9:
+    dependencies:
+      '@fanxipan/compiler': 1.0.9
+      '@fanxipan/router': 1.0.9
+      '@fanxipan/runtime': 1.0.9
 
   fdir@6.5.0(picomatch@4.0.4):
     optionalDependencies:

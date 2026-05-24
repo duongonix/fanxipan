@@ -1,6 +1,6 @@
 use crate::codegen::context::CodegenCtx;
 use fanxipan_analyzer::ReactivityGraph;
-use fanxipan_ast::ComponentNode;
+use fanxipan_ast::{ComponentNode, TemplateNode};
 
 use super::{directives::emit_component_props_object, node::emit_node};
 
@@ -24,10 +24,26 @@ pub fn emit_component_node(
         "  const {props} = {};\n",
         emit_component_props_object(&component.directives, graph)
     ));
+
+    let mut normal_children: Vec<&TemplateNode> = Vec::new();
+    let mut named_snippets = Vec::new();
+    for child in &component.children {
+        if let TemplateNode::SnippetBlock(block) = child {
+            named_snippets.push(block.name.clone());
+            emit_node(child, parent, out, ctx, graph, scope_class);
+        } else {
+            normal_children.push(child);
+        }
+    }
+
+    for name in named_snippets {
+        out.push_str(&format!("  {props}[\"{name}\"] = {name};\n"));
+    }
+
     out.push_str(&format!(
         "  const {children_factory} = () => {{ const frag = document.createDocumentFragment();"
     ));
-    for child in &component.children {
+    for child in normal_children {
         emit_node(child, "frag", out, ctx, graph, scope_class);
     }
     out.push_str(" return frag; };\n");

@@ -1,0 +1,32 @@
+import { Toast, ScrollArea, Avatar } from "fanxiui";
+
+function App() {
+  return (
+    <div>
+      <Avatar.Root>
+        <Avatar.Image src="https://example.com/avatar.png" alt="User" />
+        <Avatar.Fallback>U</Avatar.Fallback>
+      </Avatar.Root>
+
+      <ScrollArea.Root>
+        <ScrollArea.Viewport>
+          <div style="height:200px;">Long content</div>
+        </ScrollArea.Viewport>
+        <ScrollArea.Scrollbar>
+          <ScrollArea.Thumb />
+        </ScrollArea.Scrollbar>
+      </ScrollArea.Root>
+
+      <Toast.Provider>
+        <Toast.Viewport>
+          <Toast.Root title="Saved" description="Profile updated">
+            <Toast.Title>Saved</Toast.Title>
+            <Toast.Description>Profile updated</Toast.Description>
+          </Toast.Root>
+        </Toast.Viewport>
+      </Toast.Provider>
+    </div>
+  );
+}
+
+export default App;

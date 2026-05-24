@@ -1,0 +1,27 @@
+import { Home, Search, Settings, User, AArrowDown  } from "fanxicon";
+
+function App() {
+  return (
+    <main style="font-family: ui-sans-serif, system-ui; padding: 24px; color: #0f172a;">
+      <h1 style="margin:0 0 16px;">Fanxicon Example (.fanxi)</h1>
+      <p style="margin:0 0 20px; color:#475569;">
+        Icons inherit <code>currentColor</code> and support size/color/strokeWidth/title.
+      </p>
+
+      <div style="display:flex; gap:14px; align-items:center; color:#60a5fa; margin-bottom:20px;">
+        <Home />
+        <AArrowDown size={40} />
+        <User color="#33b16e" strokeWidth={5.75} />
+        <Settings title="Settings icon" />
+      </div>
+
+      <button style="display:inline-flex; align-items:center; gap:8px; border:1px solid #cbd5e1; border-radius:10px; padding:8px 12px; background:#fff; color:#1e293b;">
+        <Settings size={18} />
+        <span>Settings</span>
+      </button>
+    </main>
+  );
+}
+
+export default App;
+

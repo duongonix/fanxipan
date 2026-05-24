@@ -2,6 +2,8 @@ export {
   writable,
   readable,
   derived,
+  readonly,
+  get,
   type Readable,
   type Writable,
   type Subscriber,

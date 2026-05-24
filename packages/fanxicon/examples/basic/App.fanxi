@@ -1,0 +1,18 @@
+import { Home, Search, Settings } from "fanxicon";
+
+function App() {
+  return (
+    <div style="display:flex;gap:12px;align-items:center;color:#60a5fa;">
+      <Home />
+      <Search size={20} />
+      <button style="display:flex;gap:8px;align-items:center;">
+        <Settings size={18} />
+        <span>Settings</span>
+      </button>
+      <Home title="Home icon" />
+    </div>
+  );
+}
+
+export default App;
+

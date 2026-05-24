@@ -60,3 +60,11 @@ export {
   type TransitionController,
   type TransitionFactory,
 } from "./transitions.js";
+export {
+  createRawSnippet,
+  isSnippet,
+  type Snippet,
+  type SnippetInstance,
+  type SnippetResult,
+  type RawSnippetRenderer,
+} from "./snippet.js";

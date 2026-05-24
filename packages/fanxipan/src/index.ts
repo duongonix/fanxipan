@@ -176,6 +176,9 @@ export {
   writable,
   readable,
   derivedStore,
+  createRawSnippet,
+  isSnippet,
 } from "@fanxipan/runtime";
+export type { Snippet, SnippetInstance, SnippetResult } from "@fanxipan/runtime";
 
 

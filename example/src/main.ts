@@ -1,3 +1,4 @@
+import "./global.css";
 import fanxipan from "fanxipan";
 import App from "./App.fanxi";
 

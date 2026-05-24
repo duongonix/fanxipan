@@ -102,6 +102,20 @@ function Comp({ name, click }) {
     expect(out.code).toContain("String(name)");
   });
 
+  itNative("supports function-component bindable parameter style", () => {
+    const src = `
+function Child(value = $bindable()) {
+  return (
+    <input bind:value={value} />
+  )
+}
+`;
+    const out = compile(src, { filename: "Child.fanxi", hmr: false });
+    expect(out.code).toContain("let value");
+    expect(out.code).toContain("props.value");
+    expect(out.code).toContain("const __fanxipan_emit_bindable = (dep) => {");
+  });
+
   itNative("wires $effect to dependency-aware runtime hooks", () => {
     const src = `
 function App() {
