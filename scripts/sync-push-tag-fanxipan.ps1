@@ -5,6 +5,7 @@ param(
   [string]$Branch = "main",
   [string]$CommitMessage = "chore: sync fanxipan release workspace",
   [string]$Tag = "",
+  [switch]$SyncVersionsFromTag,
   [switch]$NoPush,
   [switch]$DryRun
 )
@@ -21,6 +22,63 @@ function Run([string]$command) {
     Invoke-Expression $command
     if ($LASTEXITCODE -ne 0) {
       throw "Command failed: $command"
+    }
+  }
+}
+
+function IsFanxipanPackageName([string]$name) {
+  if ([string]::IsNullOrWhiteSpace($name)) { return $false }
+  if ($name -eq "fanxipan") { return $true }
+  if ($name -eq "vite-plugin-fanxipan") { return $true }
+  if ($name -eq "create-fanxipan") { return $true }
+  if ($name.StartsWith("@fanxipan/")) { return $true }
+  return $false
+}
+
+function UpdateJsonFile([string]$path, [object]$obj) {
+  $json = $obj | ConvertTo-Json -Depth 100
+  [System.IO.File]::WriteAllText($path, ($json + "`n"), (New-Object System.Text.UTF8Encoding($false)))
+}
+
+function BumpFanxipanVersions([string]$repoRoot, [string]$version) {
+  Step "Aligning Fanxipan package versions to $version"
+  $pkgFiles = Get-ChildItem -LiteralPath $repoRoot -Recurse -Filter package.json -File |
+    Where-Object { $_.FullName -notmatch "\\node_modules\\" }
+
+  $fanxipanNames = New-Object System.Collections.Generic.HashSet[string]
+  foreach ($file in $pkgFiles) {
+    $obj = Get-Content -LiteralPath $file.FullName -Raw | ConvertFrom-Json
+    if (IsFanxipanPackageName([string]$obj.name)) {
+      $fanxipanNames.Add([string]$obj.name) | Out-Null
+    }
+  }
+
+  foreach ($file in $pkgFiles) {
+    $obj = Get-Content -LiteralPath $file.FullName -Raw | ConvertFrom-Json
+    $changed = $false
+
+    if (IsFanxipanPackageName([string]$obj.name)) {
+      if ([string]$obj.version -ne $version) {
+        $obj.version = $version
+        $changed = $true
+      }
+    }
+
+    foreach ($section in @("dependencies", "devDependencies", "peerDependencies", "optionalDependencies")) {
+      if (-not ($obj.PSObject.Properties.Name -contains $section)) { continue }
+      $depObj = $obj.$section
+      if ($null -eq $depObj) { continue }
+      foreach ($depName in @($depObj.PSObject.Properties.Name)) {
+        if ($fanxipanNames.Contains($depName) -and [string]$depObj.$depName -ne $version) {
+          $depObj.$depName = $version
+          $changed = $true
+        }
+      }
+    }
+
+    if ($changed) {
+      UpdateJsonFile -path $file.FullName -obj $obj
+      Write-Host "   updated: $($file.FullName)" -ForegroundColor DarkGray
     }
   }
 }
@@ -149,6 +207,24 @@ foreach ($path in $includePaths) {
 }
 
 Step "Committing synced changes"
+if (-not [string]::IsNullOrWhiteSpace($Tag)) {
+  if ($Tag -notmatch "^fanxipan-v\d+\.\d+\.\d+([\-+].+)?$") {
+    throw "Invalid tag format '$Tag'. Expected: fanxipan-v1.2.3 or fanxipan-v1.2.3-rc.1"
+  }
+}
+
+if ($SyncVersionsFromTag -or -not [string]::IsNullOrWhiteSpace($Tag)) {
+  if ([string]::IsNullOrWhiteSpace($Tag)) {
+    throw "SyncVersionsFromTag requires -Tag fanxipan-vX.Y.Z."
+  }
+  $releaseVersion = ($Tag -replace "^fanxipan-v", "")
+  if (-not $DryRun) {
+    BumpFanxipanVersions -repoRoot $resolvedWork -version $releaseVersion
+  } else {
+    Write-Host "   dry-run: would align Fanxipan versions to $releaseVersion" -ForegroundColor Yellow
+  }
+}
+
 Run "git -C `"$resolvedWork`" checkout -B `"$Branch`""
 Run "git -C `"$resolvedWork`" add -A"
 
@@ -170,9 +246,6 @@ if (-not $NoPush) {
 }
 
 if (-not [string]::IsNullOrWhiteSpace($Tag)) {
-  if ($Tag -notmatch "^fanxipan-v\d+\.\d+\.\d+([\-+].+)?$") {
-    throw "Invalid tag format '$Tag'. Expected: fanxipan-v1.2.3 or fanxipan-v1.2.3-rc.1"
-  }
   Step "Creating/updating tag $Tag"
   Run "git -C `"$resolvedWork`" tag -f `"$Tag`""
   if (-not $NoPush) {

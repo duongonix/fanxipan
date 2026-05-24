@@ -7,14 +7,12 @@
     "build": "node ../../scripts/run-vite.mjs build"
   },
   "dependencies": {
-    "fanxipan": "workspace:*"
+    "fanxipan": "1.0.2"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.0",
     "tailwindcss": "^4.1.0",
     "vite": "^6.0.0",
-    "vite-plugin-fanxipan": "workspace:*"
+    "vite-plugin-fanxipan": "1.0.2"
   }
 }
-
-

@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-fanxipan",
-  "version": "0.1.0",
+  "version": "1.0.2",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,8 +9,11 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
   },
-  "dependencies": {"vite": "^6.0.0", "@fanxipan/compiler": "workspace:*"}, "exports": {".": "./dist/index.js"}
+  "dependencies": {
+    "vite": "^6.0.0",
+    "@fanxipan/compiler": "1.0.2"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  }
 }
-
-
-

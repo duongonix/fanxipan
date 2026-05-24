@@ -1,6 +1,6 @@
 {
   "name": "create-fanxipan",
-  "version": "0.1.0",
+  "version": "1.0.2",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,7 +9,10 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
   },
-  "bin": {"create-fanxipan": "dist/index.js"}, "exports": {".": "./dist/index.js"}
+  "bin": {
+    "create-fanxipan": "dist/index.js"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  }
 }
-
-

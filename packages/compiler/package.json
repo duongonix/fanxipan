@@ -1,6 +1,6 @@
 {
   "name": "@fanxipan/compiler",
-  "version": "0.1.0",
+  "version": "1.0.2",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -10,7 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@fanxipan/node": "workspace:*"
+    "@fanxipan/node": "1.0.2"
   },
   "exports": {
     ".": {
@@ -19,5 +19,3 @@
     }
   }
 }
-
-

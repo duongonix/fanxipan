@@ -8,11 +8,11 @@
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {
-    "fanxipan": "workspace:*"
+    "fanxipan": "1.0.2"
   },
   "devDependencies": {
     "vite": "^6.0.0",
-    "vite-plugin-fanxipan": "workspace:*",
+    "vite-plugin-fanxipan": "1.0.2",
     "typescript": "^5.8.0"
   }
 }

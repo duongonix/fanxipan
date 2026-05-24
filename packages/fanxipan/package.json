@@ -1,6 +1,6 @@
 {
   "name": "fanxipan",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -10,9 +10,9 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@fanxipan/runtime": "workspace:*",
-    "@fanxipan/compiler": "workspace:*",
-    "@fanxipan/router": "workspace:*"
+    "@fanxipan/runtime": "1.0.2",
+    "@fanxipan/compiler": "1.0.2",
+    "@fanxipan/router": "1.0.2"
   },
   "exports": {
     ".": {
@@ -42,6 +42,3 @@
     "./package.json": "./package.json"
   }
 }
-
-
-
