@@ -93,6 +93,17 @@ function assertPublishArtifacts(pkg, pkgDir) {
   }
 }
 
+function assertNodeLoaderShape() {
+  const loaderPath = path.join("packages", "fanxipan-node", "index.js");
+  if (!existsSync(loaderPath)) return;
+  const src = readFileSync(loaderPath, "utf8");
+  if (src.includes("fanxipan-node.")) {
+    throw new Error(
+      `[stable] invalid @fanxipan/node loader detected (${loaderPath}) - found legacy 'fanxipan-node.*.node' pattern. Expected 'index.*.node'.`,
+    );
+  }
+}
+
 function isPublished(name, version) {
   const res = runCapture("npm", ["view", `${name}@${version}`, "version"]);
   return res.status === 0;
@@ -100,8 +111,8 @@ function isPublished(name, version) {
 
 if (!skipPreflight) {
   console.log("[stable] running preflight checks...");
+  assertNodeLoaderShape();
   run("pnpm", ["run", "build:core"]);
-  run("pnpm", ["--filter", "@fanxipan/node", "build"]);
   run("pnpm", ["--filter", "create-fanxipan", "build"]);
   run("pnpm", ["run", "test:fanxipan"]);
   run("pnpm", ["run", "check:esm-imports"]);

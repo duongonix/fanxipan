@@ -89,10 +89,21 @@ function assertPublishArtifacts(pkg, pkgDir) {
   }
 }
 
+function assertNodeLoaderShape() {
+  const loaderPath = path.join("packages", "fanxipan-node", "index.js");
+  if (!existsSync(loaderPath)) return;
+  const src = readFileSync(loaderPath, "utf8");
+  if (src.includes("fanxipan-node.")) {
+    throw new Error(
+      `[canary] invalid @fanxipan/node loader detected (${loaderPath}) - found legacy 'fanxipan-node.*.node' pattern. Expected 'index.*.node'.`,
+    );
+  }
+}
+
 if (!skipPreflight) {
   console.log("[canary] running preflight checks...");
+  assertNodeLoaderShape();
   run("pnpm", ["run", "build:core"]);
-  run("pnpm", ["--filter", "@fanxipan/node", "build"]);
   run("pnpm", ["--filter", "create-fanxipan", "build"]);
   run("pnpm", ["run", "test:fanxipan"]);
   run("pnpm", ["run", "check:esm-imports"]);
