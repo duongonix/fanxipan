@@ -1,6 +1,6 @@
 {
   "name": "fanxipan",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -8,6 +8,14 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/duongonix/fanxipan_repo"
+  },
+  "homepage": "https://github.com/duongonix/fanxipan_repo#readme",
+  "bugs": {
+    "url": "https://github.com/duongonix/fanxipan_repo/issues"
   },
   "dependencies": {
     "@fanxipan/runtime": "workspace:*",
@@ -42,6 +50,3 @@
     "./package.json": "./package.json"
   }
 }
-
-
-

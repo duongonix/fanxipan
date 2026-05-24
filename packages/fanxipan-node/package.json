@@ -1,6 +1,6 @@
 {
   "name": "@fanxipan/node",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "type": "commonjs",
   "main": "index.js",
   "types": "index.d.ts",
@@ -14,6 +14,14 @@
     "build": "napi build --platform --cargo-cwd ../../crates/fanxipan_node",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node -e \"require('./index.js')\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/duongonix/fanxipan_repo"
+  },
+  "homepage": "https://github.com/duongonix/fanxipan_repo#readme",
+  "bugs": {
+    "url": "https://github.com/duongonix/fanxipan_repo/issues"
   },
   "devDependencies": {
     "@napi-rs/cli": "^2.18.4",
