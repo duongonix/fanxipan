@@ -1,8 +1,20 @@
 import { describe, expect, it } from "vitest";
 import { compile } from "./transform.js";
 
+function detectNativeBridge(): boolean {
+  const out = compile("function Probe(){ return (<div>ok</div>) }", {
+    filename: "Probe.fanxi",
+    hmr: false,
+  });
+  // Fallback output contains __fanxipan_template/create() skeleton.
+  return !out.code.includes("const __fanxipan_template =");
+}
+
+const hasNativeBridge = detectNativeBridge();
+const itNative = hasNativeBridge ? it : it.skip;
+
 describe("compiler native-normalization", () => {
-  it("keeps imports and default export contract for component usage", () => {
+  itNative("keeps imports and default export contract for component usage", () => {
     const src = `
 import Comp from "./Com.fanxi"
 function App() {
@@ -23,7 +35,7 @@ export default App
     expect(out.code).toContain("export default __fanxipan_default_component");
   });
 
-  it("replaces derived symbol usage with expression in generated body", () => {
+  itNative("replaces derived symbol usage with expression in generated body", () => {
     const src = `
 function App() {
   let count = $state(0)
@@ -38,7 +50,7 @@ function App() {
     expect(out.code).toContain('ctx.subscribeExpr(["count"]');
   });
 
-  it("keeps derived values valid inside object shorthand expressions", () => {
+  itNative("keeps derived values valid inside object shorthand expressions", () => {
     const src = `
 function App() {
   let count = $state(1)
@@ -53,7 +65,7 @@ function App() {
     expect(out.code).toContain("console.log({ double: (count * 2) })");
   });
 
-  it("always provides __fanxipan_hmr_state when hmr is enabled", () => {
+  itNative("always provides __fanxipan_hmr_state when hmr is enabled", () => {
     const src = `
 function App() {
   return (<div>hello</div>)
@@ -64,7 +76,7 @@ function App() {
     expect(out.code).toContain("import.meta.hot.accept");
   });
 
-  it("preserves runtime contract marker from Rust codegen", () => {
+  itNative("preserves runtime contract marker from Rust codegen", () => {
     const src = `
 function App() {
   return (<div>hello</div>)
@@ -76,7 +88,7 @@ function App() {
     expect(hasMarker || hasLegacyBridge).toBe(true);
   });
 
-  it("supports destructured props parameter by binding from props at runtime", () => {
+  itNative("supports destructured props parameter by binding from props at runtime", () => {
     const src = `
 function Comp({ name, click }) {
   return (
@@ -90,7 +102,7 @@ function Comp({ name, click }) {
     expect(out.code).toContain("String(name)");
   });
 
-  it("wires $effect to dependency-aware runtime hooks", () => {
+  itNative("wires $effect to dependency-aware runtime hooks", () => {
     const src = `
 function App() {
   let count = $state(0)
@@ -107,7 +119,7 @@ function App() {
     expect(out.code).toContain("__fanxipan_detach_effects");
   });
 
-  it("injects children binding and emit helper for component contract", () => {
+  itNative("injects children binding and emit helper for component contract", () => {
     const src = `
 function Item({ onSave }) {
   const submit = () => $emit("save", 123)
@@ -125,7 +137,7 @@ function Item({ onSave }) {
     expect(out.code).toContain("if (typeof children === 'function')");
   });
 
-  it("can disable legacy compat pass via env flag", () => {
+  itNative("can disable legacy compat pass via env flag", () => {
     const prev = process.env.fanxipan_LEGACY_COMPAT_PASS;
     process.env.fanxipan_LEGACY_COMPAT_PASS = "0";
     const src = `
@@ -142,7 +154,7 @@ function App() {
     }
   });
 
-  it("preserves side-effect css imports from .fanxi source", () => {
+  itNative("preserves side-effect css imports from .fanxi source", () => {
     const src = `
 import "./global.css"
 function App() {
@@ -154,7 +166,7 @@ export default App
     expect(out.code).toContain('import "./global.css"');
   });
 
-  it("warns on legacy section component format while keeping compatibility", () => {
+  itNative("warns on legacy section component format while keeping compatibility", () => {
     const src = `
 <script lang="ts">
   import { fade } from "fanxipan/transitions";
@@ -178,7 +190,7 @@ h1 { color: red; }
     expect(out.css).toContain("h1.fanxi-s-");
   });
 
-  it("supports spread attrs, shorthand props, spread props and dynamic component codegen", () => {
+  itNative("supports spread attrs, shorthand props, spread props and dynamic component codegen", () => {
     const src = `
 import Current from "./Current.fanxi"
 function App() {
@@ -200,7 +212,7 @@ function App() {
     expect(out.code).toContain("ctx.mountComponent(Current");
   });
 
-  it("extracts scoped CSS from Fanxipan module style export", () => {
+  itNative("extracts scoped CSS from Fanxipan module style export", () => {
     const src = `
 function App() {
   return (

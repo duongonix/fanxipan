@@ -51,7 +51,6 @@ $includePaths = @(
   "tests",
   "example",
   "examples",
-  ".cargo",
   "Cargo.toml",
   "Cargo.lock",
   "rust-toolchain.toml",
