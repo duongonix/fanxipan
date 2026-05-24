@@ -6,9 +6,6 @@ on:
       release_tag:
         description: "Tag name (fanxipan-vX.Y.Z)"
         required: false
-  push:
-    tags:
-      - "fanxipan-v*"
 
 jobs:
   release-gate:
@@ -36,10 +33,10 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Release Metadata Gate
         run: pnpm run release:gate
-      - name: Core Doctor
-        run: pnpm run doctor:core
       - name: Build Core
         run: pnpm run build:core
+      - name: Core Doctor
+        run: pnpm run doctor:core
       - name: API Contract
         run: pnpm run check:api-contract
       - name: Deprecation Contract

@@ -34,6 +34,11 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      - name: Verify npm auth (token must allow publish)
+        run: |
+          npm whoami
+          echo "Note: NPM_TOKEN must be an Automation token, or a granular token with bypass 2FA publish permission."
+
       - name: Build Core
         run: pnpm run build:core
 
