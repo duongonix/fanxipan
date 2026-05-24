@@ -69,9 +69,18 @@ function BumpFanxipanVersions([string]$repoRoot, [string]$version) {
       $depObj = $obj.$section
       if ($null -eq $depObj) { continue }
       foreach ($depName in @($depObj.PSObject.Properties.Name)) {
-        if ($fanxipanNames.Contains($depName) -and [string]$depObj.$depName -ne $version) {
-          $depObj.$depName = $version
-          $changed = $true
+        if (-not $fanxipanNames.Contains($depName)) { continue }
+        $currentSpec = [string]$depObj.$depName
+        if ($currentSpec.StartsWith("workspace:")) {
+          if ($currentSpec -ne "workspace:*") {
+            $depObj.$depName = "workspace:*"
+            $changed = $true
+          }
+        } else {
+          if ($currentSpec -ne $version) {
+            $depObj.$depName = $version
+            $changed = $true
+          }
         }
       }
     }
@@ -213,15 +222,18 @@ if (-not [string]::IsNullOrWhiteSpace($Tag)) {
   }
 }
 
-if ($SyncVersionsFromTag -or -not [string]::IsNullOrWhiteSpace($Tag)) {
+  if ($SyncVersionsFromTag -or -not [string]::IsNullOrWhiteSpace($Tag)) {
   if ([string]::IsNullOrWhiteSpace($Tag)) {
     throw "SyncVersionsFromTag requires -Tag fanxipan-vX.Y.Z."
   }
   $releaseVersion = ($Tag -replace "^fanxipan-v", "")
   if (-not $DryRun) {
     BumpFanxipanVersions -repoRoot $resolvedWork -version $releaseVersion
+    Step "Refreshing lockfile after version alignment"
+    Run "pnpm -C `"$resolvedWork`" install --lockfile-only"
   } else {
     Write-Host "   dry-run: would align Fanxipan versions to $releaseVersion" -ForegroundColor Yellow
+    Write-Host "   dry-run: would run pnpm install --lockfile-only" -ForegroundColor Yellow
   }
 }
 

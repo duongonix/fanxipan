@@ -10,10 +10,12 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "fanxipan": "1.0.2",
-    "@fanxipan/compiler": "1.0.2"
+    "fanxipan": "workspace:*",
+    "@fanxipan/compiler": "workspace:*"
   },
   "exports": {
     ".": "./dist/index.js"
   }
 }
+
+
