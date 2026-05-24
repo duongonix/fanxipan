@@ -26,6 +26,7 @@
     "test:e2e:basic": "node ./scripts/e2e-basic.mjs",
     "test:e2e:router": "node ./scripts/e2e-router.mjs",
     "test:e2e:examples": "node ./scripts/e2e-examples.mjs",
+    "test:smoke:create": "node ./scripts/smoke-create-fanxipan.mjs",
     "test:fanxipan:js": "pnpm --filter @fanxipan/runtime test && pnpm --filter @fanxipan/router test && pnpm --filter @fanxipan/compiler test && pnpm --filter fanxipan test && pnpm --filter vite-plugin-fanxipan test && pnpm --filter create-fanxipan test",
     "test:fanxipan:rust": "node ./scripts/test-fanxipan-rust.mjs",
     "test:fanxipan": "pnpm run test:fanxipan:rust && pnpm run test:fanxipan:js",
@@ -50,5 +51,4 @@
     "playwright": "^1.54.0"
   }
 }
-
 

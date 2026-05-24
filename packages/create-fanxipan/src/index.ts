@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import path from "node:path";
-import { scaffoldfanxipanApp } from "./scaffold";
+import { scaffoldfanxipanApp } from "./scaffold.js";
 
 export function runCreatefanxipan(argv: string[] = process.argv.slice(2)): void {
   const templateFlag = argv.find((arg) => arg.startsWith("--template="));

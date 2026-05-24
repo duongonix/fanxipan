@@ -63,9 +63,31 @@ function rewriteDepsField(obj, field, versionMap) {
   }
 }
 
+function assertPublishArtifacts(pkg, pkgDir) {
+  const required = [];
+  for (const key of ["main", "module", "types"]) {
+    if (typeof pkg[key] === "string" && pkg[key].trim()) required.push(pkg[key]);
+  }
+  if (pkg.bin && typeof pkg.bin === "object") {
+    for (const rel of Object.values(pkg.bin)) {
+      if (typeof rel === "string" && rel.trim()) required.push(rel);
+    }
+  } else if (typeof pkg.bin === "string" && pkg.bin.trim()) {
+    required.push(pkg.bin);
+  }
+  for (const rel of required) {
+    const full = path.join(pkgDir, rel);
+    if (!existsSync(full)) {
+      throw new Error(`[stable] missing publish artifact for ${pkg.name}: ${rel}`);
+    }
+  }
+}
+
 if (!skipPreflight) {
   console.log("[stable] running preflight checks...");
   run("pnpm", ["run", "build:core"]);
+  run("pnpm", ["--filter", "@fanxipan/node", "build"]);
+  run("pnpm", ["--filter", "create-fanxipan", "build"]);
   run("pnpm", ["run", "test:fanxipan"]);
   run("pnpm", ["run", "check:api-contract"]);
   run("pnpm", ["run", "release:gate"]);
@@ -86,6 +108,7 @@ const versionMap = new Map(packages.map((x) => [x.pkg.name, x.pkg.version]));
 
 for (const { relDir, pkg } of packages) {
   const sourceDir = relDir;
+  assertPublishArtifacts(pkg, sourceDir);
   const targetDir = path.join(tmpRoot, relDir.replace(/^packages[\\/]/, ""));
   cpSync(sourceDir, targetDir, {
     recursive: true,

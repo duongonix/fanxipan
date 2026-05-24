@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { appFanxi, appTs, globalCss, indexHtml, packageJson, routeFanxi, tsconfig, viteConfig } from "./template";
+import { appFanxi, appTs, globalCss, indexHtml, packageJson, routeFanxi, tsconfig, viteConfig } from "./template.js";
 
 export function scaffoldfanxipanApp(targetDir: string, template = "basic"): void {
   const srcDir = path.join(targetDir, "src");

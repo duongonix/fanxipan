@@ -10,8 +10,31 @@ permissions:
   id-token: write
 
 jobs:
+  create-cli-smoke:
+    name: Create CLI Smoke (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.0.0
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Smoke Create Fanxipan
+        run: pnpm run test:smoke:create
+
   release:
     runs-on: ubuntu-latest
+    needs: create-cli-smoke
     env:
       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
