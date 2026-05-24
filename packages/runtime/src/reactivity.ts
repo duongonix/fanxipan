@@ -1,4 +1,4 @@
-import { flushSync, schedule } from "./internal/scheduler";
+import { flushSync, schedule } from "./internal/scheduler.js";
 
 export type Cleanup = () => void;
 type Subscriber = () => void;

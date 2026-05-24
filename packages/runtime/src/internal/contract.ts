@@ -1,4 +1,4 @@
-import type { RenderContext } from "../client";
+import type { RenderContext } from "../client.js";
 
 export type RenderMode = "render" | "hydrate";
 

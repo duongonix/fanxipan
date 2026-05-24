@@ -31,13 +31,14 @@
     "test:fanxipan:rust": "node ./scripts/test-fanxipan-rust.mjs",
     "test:fanxipan": "pnpm run test:fanxipan:rust && pnpm run test:fanxipan:js",
     "check:api-contract": "node ./scripts/check-api-contract.mjs",
+    "check:esm-imports": "node ./scripts/check-esm-imports.mjs",
     "check:deprecations": "node ./scripts/check-deprecations.mjs",
     "release:gate": "node ./scripts/check-release-gate.mjs",
     "release:canary:dry": "node ./scripts/publish-canary.mjs --dry-run",
     "release:canary": "node ./scripts/publish-canary.mjs",
     "release:stable:dry": "node ./scripts/publish-stable.mjs --dry-run",
     "release:stable": "node ./scripts/publish-stable.mjs",
-    "verify:fanxipan": "pnpm run doctor:core && pnpm run build:core && pnpm run test:fanxipan && pnpm run bench:runtime && pnpm run soak:runtime && pnpm run test:e2e:examples",
+    "verify:fanxipan": "pnpm run doctor:core && pnpm run check:esm-imports && pnpm run build:core && pnpm run test:fanxipan && pnpm run bench:runtime && pnpm run soak:runtime && pnpm run test:e2e:examples",
     "verify:spa": "pnpm run verify:fanxipan",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test"
@@ -51,4 +52,3 @@
     "playwright": "^1.54.0"
   }
 }
-

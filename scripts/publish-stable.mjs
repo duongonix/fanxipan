@@ -104,6 +104,7 @@ if (!skipPreflight) {
   run("pnpm", ["--filter", "@fanxipan/node", "build"]);
   run("pnpm", ["--filter", "create-fanxipan", "build"]);
   run("pnpm", ["run", "test:fanxipan"]);
+  run("pnpm", ["run", "check:esm-imports"]);
   run("pnpm", ["run", "check:api-contract"]);
   run("pnpm", ["run", "release:gate"]);
 }

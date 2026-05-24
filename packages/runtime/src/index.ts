@@ -18,7 +18,7 @@ export {
   $global,
   $inspect,
   type Cleanup,
-} from "./reactivity";
+} from "./reactivity.js";
 export {
   writable,
   readable,
@@ -29,9 +29,9 @@ export {
   type Unsubscriber,
   type Updater,
   type StartStopNotifier,
-} from "./store";
-export { mount, onMount, onUnmount, nextTick, $mount, $unmount, $nextTick } from "./lifecycle";
-export { applyScopedClass } from "./dom";
+} from "./store.js";
+export { mount, onMount, onUnmount, nextTick, $mount, $unmount, $nextTick } from "./lifecycle.js";
+export { applyScopedClass } from "./dom.js";
 export {
   createRenderContext,
   runWithRenderContext,
@@ -39,14 +39,14 @@ export {
   provide,
   inject,
   type RenderContext,
-} from "./client";
+} from "./client.js";
 export type {
   CompiledComponentCreate,
   CompiledComponentFunction,
   CompiledComponentLike,
   CompiledComponentObject,
   RenderMode,
-} from "./internal/contract";
+} from "./internal/contract.js";
 export {
   fade,
   fly,
@@ -59,4 +59,4 @@ export {
   type TransitionConfig,
   type TransitionController,
   type TransitionFactory,
-} from "./transitions";
+} from "./transitions.js";

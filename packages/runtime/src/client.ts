@@ -1,6 +1,6 @@
-import { applyScopedClass } from "./dom";
-import { runMountHooks, runUnmountHooks } from "./lifecycle";
-import { createSubscriptionStore, type Subscriber } from "./internal/subscriptions";
+import { applyScopedClass } from "./dom.js";
+import { runMountHooks, runUnmountHooks } from "./lifecycle.js";
+import { createSubscriptionStore, type Subscriber } from "./internal/subscriptions.js";
 
 export interface RenderContext {
   parent?: RenderContext;
