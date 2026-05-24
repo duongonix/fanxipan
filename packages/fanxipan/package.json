@@ -1,6 +1,6 @@
 {
   "name": "fanxipan",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -50,6 +50,3 @@
     "./package.json": "./package.json"
   }
 }
-
-
-

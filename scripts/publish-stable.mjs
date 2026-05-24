@@ -27,6 +27,16 @@ function run(command, args, cwd = process.cwd()) {
   }
 }
 
+function runCapture(command, args, cwd = process.cwd()) {
+  return spawnSync(command, args, {
+    cwd,
+    stdio: "pipe",
+    shell: process.platform === "win32",
+    encoding: "utf8",
+    env: { ...process.env, npm_config_cache: path.resolve(".tmp", "npm-cache") },
+  });
+}
+
 function loadPackages() {
   const items = [];
   for (const relDir of publishPlan) {
@@ -83,6 +93,11 @@ function assertPublishArtifacts(pkg, pkgDir) {
   }
 }
 
+function isPublished(name, version) {
+  const res = runCapture("npm", ["view", `${name}@${version}`, "version"]);
+  return res.status === 0;
+}
+
 if (!skipPreflight) {
   console.log("[stable] running preflight checks...");
   run("pnpm", ["run", "build:core"]);
@@ -130,6 +145,10 @@ for (const { relDir, pkg } of packages) {
   console.log(
     `[stable] publishing ${mutablePkg.name}@${mutablePkg.version} (${dryRun ? "dry-run" : "live"})`,
   );
+  if (!dryRun && isPublished(mutablePkg.name, mutablePkg.version)) {
+    console.log(`[stable] skip already published ${mutablePkg.name}@${mutablePkg.version}`);
+    continue;
+  }
   run("npm", args, targetDir);
 }
 
