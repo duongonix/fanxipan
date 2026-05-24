@@ -8,5 +8,4 @@ export {
   type Unsubscriber,
   type Updater,
   type StartStopNotifier,
-} from "runtime/store";
-
+} from "@fanxipan/runtime/store";

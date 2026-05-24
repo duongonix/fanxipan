@@ -17,4 +17,4 @@ export {
   $global,
   $inspect,
   type Cleanup,
-} from "runtime";
+} from "@fanxipan/runtime";

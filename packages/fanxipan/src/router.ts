@@ -1,1 +1,1 @@
-export * from "router";
+export * from "@fanxipan/router";

@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { compile } from "compiler";
+import { compile } from "@fanxipan/compiler";
 import { matchManifestRoute } from "./match.js";
 import { serializeForHtml } from "./serialization.js";
 import type { RouteManifest, RouteManifestEntry } from "./types.js";

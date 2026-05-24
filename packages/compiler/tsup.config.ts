@@ -4,7 +4,7 @@ export default defineConfig({
   entry: ["./src/index.ts"],
   format: ["esm", "cjs"],
   dts: true,
-  external: ["fanxipan-node"],
+  external: ["@fanxipan/node"],
   clean: true,
 });
 

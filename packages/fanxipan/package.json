@@ -9,13 +9,37 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
   },
-  "dependencies": {"runtime": "workspace:*", "compiler": "workspace:*", "router": "workspace:*"},
+  "dependencies": {
+    "@fanxipan/runtime": "workspace:*",
+    "@fanxipan/compiler": "workspace:*",
+    "@fanxipan/router": "workspace:*"
+  },
   "exports": {
-    ".": "./dist/index.js",
-    "./router": "./dist/router.js",
-    "./store": "./dist/store.js",
-    "./reactivity": "./dist/reactivity.js",
-    "./transitions": "./dist/transitions.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./router": {
+      "types": "./dist/router.d.ts",
+      "import": "./dist/router.js"
+    },
+    "./runtime": {
+      "types": "./dist/runtime.d.ts",
+      "import": "./dist/runtime.js"
+    },
+    "./reactivity": {
+      "types": "./dist/reactivity.d.ts",
+      "import": "./dist/reactivity.js"
+    },
+    "./store": {
+      "types": "./dist/store.d.ts",
+      "import": "./dist/store.js"
+    },
+    "./transitions": {
+      "types": "./dist/transitions.d.ts",
+      "import": "./dist/transitions.js"
+    },
+    "./package.json": "./package.json"
   }
 }
 

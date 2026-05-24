@@ -21,7 +21,7 @@ fanxipan là frontend framework compiler-first với Rust compiler + tiny TypeSc
 - Rust check: `cargo check`
 - JS build: `pnpm -r build`
 - Core build (kèm native bridge): `pnpm run build:core`
-- Build NAPI bridge riêng: `pnpm --filter fanxipan-node build`
+- Build NAPI bridge riêng: `pnpm --filter @fanxipan/node build`
 - JS typecheck: `pnpm -r typecheck`
 - API contract check: `pnpm run check:api-contract`
 - Deprecation policy check: `pnpm run check:deprecations`

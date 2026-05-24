@@ -10,4 +10,4 @@ export {
   type TransitionConfig,
   type TransitionController,
   type TransitionFactory,
-} from "runtime";
+} from "@fanxipan/runtime";

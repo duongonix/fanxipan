@@ -3,47 +3,23 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 
 const dryRun = process.argv.includes("--dry-run");
+const skipPreflight = process.argv.includes("--skip-preflight");
+
+const publishPlan = [
+  "packages/runtime",
+  "packages/router",
+  "packages/compiler",
+  "packages/fanxipan-node",
+  "packages/fanxipan",
+  "packages/vite-plugin-fanxipan",
+  "packages/create-fanxipan",
+];
+
 const rootPkg = JSON.parse(readFileSync("package.json", "utf8"));
 const sha = (process.env.GITHUB_SHA || "localdev").slice(0, 7);
 const stamp = new Date().toISOString().replace(/[-:TZ.]/g, "").slice(0, 12);
 const canaryVersion =
   process.env.CANARY_VERSION || `${rootPkg.version}-canary.${stamp}.${sha}`;
-
-const packages = [
-  "runtime",
-  "router",
-  "compiler",
-  "fanxipan-node",
-  "fanxipan",
-  "vite-plugin-fanxipan",
-  "create-fanxipan",
-];
-
-const packageMeta = new Map();
-for (const dir of packages) {
-  const pkgPath = path.join("packages", dir, "package.json");
-  const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
-  packageMeta.set(pkg.name, { dir, pkg });
-}
-
-function rewriteDepsField(obj, field, allNames) {
-  if (!obj[field]) return;
-  for (const name of Object.keys(obj[field])) {
-    const current = obj[field][name];
-    if (allNames.has(name)) {
-      obj[field][name] = canaryVersion;
-      continue;
-    }
-    if (typeof current === "string" && current.startsWith("workspace:")) {
-      if (current === "workspace:*") {
-        throw new Error(
-          `Cannot publish canary: dependency ${name} uses workspace:* but is not in canary set.`,
-        );
-      }
-      obj[field][name] = current.replace(/^workspace:/, "");
-    }
-  }
-}
 
 function run(command, args, cwd = process.cwd()) {
   const res = spawnSync(command, args, {
@@ -57,38 +33,86 @@ function run(command, args, cwd = process.cwd()) {
   }
 }
 
+function loadPackages() {
+  const items = [];
+  for (const relDir of publishPlan) {
+    const pkgPath = path.join(relDir, "package.json");
+    if (!existsSync(pkgPath)) {
+      throw new Error(`Missing package.json: ${pkgPath}`);
+    }
+    const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
+    if (pkg.private) {
+      console.log(`[canary] skip private package ${pkg.name} (${relDir})`);
+      continue;
+    }
+    items.push({ relDir, pkg });
+  }
+  return items;
+}
+
+function rewriteDepsField(obj, field, allNames) {
+  if (!obj[field]) return;
+  for (const name of Object.keys(obj[field])) {
+    const current = obj[field][name];
+    if (allNames.has(name)) {
+      obj[field][name] = canaryVersion;
+      continue;
+    }
+    if (typeof current === "string" && current.startsWith("workspace:")) {
+      if (current === "workspace:*") {
+        throw new Error(
+          `Cannot publish canary: dependency ${name} uses workspace:* but is not in publish set.`,
+        );
+      }
+      obj[field][name] = current.replace(/^workspace:/, "");
+    }
+  }
+}
+
+if (!skipPreflight) {
+  console.log("[canary] running preflight checks...");
+  run("pnpm", ["run", "build:core"]);
+  run("pnpm", ["run", "test:fanxipan"]);
+  run("pnpm", ["run", "check:api-contract"]);
+}
+
+const packages = loadPackages();
+console.log("[canary] publish order:");
+for (const { pkg } of packages) {
+  console.log(`  - ${pkg.name}@${canaryVersion}`);
+}
+
 const tmpRoot = path.join(".tmp", "canary-publish");
 rmSync(tmpRoot, { recursive: true, force: true });
 mkdirSync(tmpRoot, { recursive: true });
 mkdirSync(path.join(".tmp", "npm-cache"), { recursive: true });
 
-const allNames = new Set([...packageMeta.keys()]);
+const allNames = new Set(packages.map((x) => x.pkg.name));
 
-for (const [pkgName, meta] of packageMeta.entries()) {
-  const sourceDir = path.join("packages", meta.dir);
-  const targetDir = path.join(tmpRoot, meta.dir);
+for (const { relDir, pkg } of packages) {
+  const sourceDir = relDir;
+  const targetDir = path.join(tmpRoot, relDir.replace(/^packages[\\/]/, ""));
   cpSync(sourceDir, targetDir, {
     recursive: true,
     filter: (src) => !src.includes(`${path.sep}node_modules${path.sep}`),
   });
 
   const pkgPath = path.join(targetDir, "package.json");
-  const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
-  pkg.version = canaryVersion;
-  rewriteDepsField(pkg, "dependencies", allNames);
-  rewriteDepsField(pkg, "devDependencies", allNames);
-  rewriteDepsField(pkg, "peerDependencies", allNames);
-  rewriteDepsField(pkg, "optionalDependencies", allNames);
-  writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`, "utf8");
+  const mutablePkg = JSON.parse(readFileSync(pkgPath, "utf8"));
+  mutablePkg.version = canaryVersion;
+  rewriteDepsField(mutablePkg, "dependencies", allNames);
+  rewriteDepsField(mutablePkg, "devDependencies", allNames);
+  rewriteDepsField(mutablePkg, "peerDependencies", allNames);
+  rewriteDepsField(mutablePkg, "optionalDependencies", allNames);
+  writeFileSync(pkgPath, `${JSON.stringify(mutablePkg, null, 2)}\n`, "utf8");
 
   const args = ["publish", "--tag", "canary", "--access", "public"];
   if (dryRun) args.push("--dry-run");
   else args.push("--provenance");
 
-  if (!existsSync(path.join(targetDir, "package.json"))) {
-    throw new Error(`Missing package.json for ${pkgName} at ${targetDir}`);
-  }
-  console.log(`[canary] publishing ${pkgName}@${canaryVersion} (${dryRun ? "dry-run" : "live"})`);
+  console.log(
+    `[canary] publishing ${mutablePkg.name}@${canaryVersion} (${dryRun ? "dry-run" : "live"})`,
+  );
   run("npm", args, targetDir);
 }
 

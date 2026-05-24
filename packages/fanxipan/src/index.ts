@@ -3,7 +3,7 @@ import {
   runWithRenderContext,
   type CompiledComponentLike,
   type RenderMode,
-} from "runtime";
+} from "@fanxipan/runtime";
 
 export interface RenderOptions {
   mode?: "render" | "hydrate";
@@ -176,6 +176,6 @@ export {
   writable,
   readable,
   derivedStore,
-} from "runtime";
+} from "@fanxipan/runtime";
 
 

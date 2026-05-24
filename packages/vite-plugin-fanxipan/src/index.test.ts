@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 describe("fanxipanPlugin", () => {
   it("transforms .fanxi with compiler output", async () => {
     vi.resetModules();
-    vi.doMock("compiler", () => ({
+    vi.doMock("@fanxipan/compiler", () => ({
       compile: vi.fn(() => ({
         code: "export default 1;",
         map: {
@@ -29,7 +29,7 @@ describe("fanxipanPlugin", () => {
 
   it("emits warnings when diagnostics exist", async () => {
     vi.resetModules();
-    vi.doMock("compiler", () => ({
+    vi.doMock("@fanxipan/compiler", () => ({
       compile: vi.fn(() => ({
         code: "export default 1;",
         map: {
@@ -66,7 +66,7 @@ describe("fanxipanPlugin", () => {
 
   it("promotes warnings to errors when configured", async () => {
     vi.resetModules();
-    vi.doMock("compiler", () => ({
+    vi.doMock("@fanxipan/compiler", () => ({
       compile: vi.fn(() => ({
         code: "export default 1;",
         map: {

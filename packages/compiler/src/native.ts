@@ -9,7 +9,7 @@ function resolveNativeBridge(): CompilerNativeBridge | null {
   if (cachedBridge !== undefined) return cachedBridge;
   const req = createRequire(import.meta.url);
   try {
-    cachedBridge = req("fanxipan-node") as CompilerNativeBridge;
+    cachedBridge = req("@fanxipan/node") as CompilerNativeBridge;
     return cachedBridge;
   } catch {
     try {

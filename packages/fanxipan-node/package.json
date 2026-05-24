@@ -1,5 +1,5 @@
 {
-  "name": "fanxipan-node",
+  "name": "@fanxipan/node",
   "version": "0.1.0",
   "type": "commonjs",
   "main": "index.js",

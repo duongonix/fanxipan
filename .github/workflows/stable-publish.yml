@@ -38,7 +38,7 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
       - name: Build Native
-        run: pnpm --filter fanxipan-node build
+        run: pnpm --filter @fanxipan/node build
       - name: Upload Native Artifact
         uses: actions/upload-artifact@v4
         with:

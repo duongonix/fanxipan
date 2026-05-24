@@ -174,7 +174,7 @@ importers:
 
   packages/compiler:
     dependencies:
-      fanxipan-node:
+      '@fanxipan/node':
         specifier: workspace:*
         version: link:../fanxipan-node
 
@@ -184,7 +184,7 @@ importers:
 
   packages/fanxikit:
     dependencies:
-      compiler:
+      '@fanxipan/compiler':
         specifier: workspace:*
         version: link:../compiler
       fanxipan:
@@ -202,13 +202,13 @@ importers:
 
   packages/fanxipan:
     dependencies:
-      compiler:
+      '@fanxipan/compiler':
         specifier: workspace:*
         version: link:../compiler
-      router:
+      '@fanxipan/router':
         specifier: workspace:*
         version: link:../router
-      runtime:
+      '@fanxipan/runtime':
         specifier: workspace:*
         version: link:../runtime
 
@@ -223,7 +223,7 @@ importers:
 
   packages/router:
     dependencies:
-      runtime:
+      '@fanxipan/runtime':
         specifier: workspace:*
         version: link:../runtime
 
@@ -233,7 +233,7 @@ importers:
 
   packages/vite-plugin-fanxipan:
     dependencies:
-      compiler:
+      '@fanxipan/compiler':
         specifier: workspace:*
         version: link:../compiler
       vite:

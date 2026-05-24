@@ -23,7 +23,7 @@
 15. Compiler wrapper ưu tiên bridge native: `packages/compiler` cố gắng dùng `fanxipan-node` (`compile_for_node_json`) rồi fallback TS wrapper an toàn.
 16. fanxipan public API cứng hơn: `render/hydrate` có contract rõ mode, cleanup idempotent, hành vi clear target tách biệt.
 17. Dựng package native chính thức `packages/fanxipan-node` (NAPI loader + typings + build script `@napi-rs/cli`) và nâng `crates/fanxipan_node` thành `cdylib` có exports `compileRx/compileForNode/compileForNodeJson`.
-18. Core build flow cập nhật để build native trước (`build:core` chạy `pnpm --filter fanxipan-node build`).
+18. Core build flow cập nhật để build native trước (`build:core` chạy `pnpm --filter @fanxipan/node build`).
 19. Bổ sung CI matrix đa nền tảng (Linux/Windows/macOS) cho Rust + JS test/build trong `.github/workflows/ci.yml`.
 20. Bổ sung test hardening cho compiler native-normalization (`packages/compiler/src/transform.native.test.ts`) để khóa lỗi component import, default export contract, derived replacement, HMR state injection.
 21. Semantic analyzer strict hơn cho edge cases:

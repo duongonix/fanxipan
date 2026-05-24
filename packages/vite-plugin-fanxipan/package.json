@@ -9,7 +9,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
   },
-  "dependencies": {"vite": "^6.0.0", "compiler": "workspace:*"}, "exports": {".": "./dist/index.js"}
+  "dependencies": {"vite": "^6.0.0", "@fanxipan/compiler": "workspace:*"}, "exports": {".": "./dist/index.js"}
 }
 
 

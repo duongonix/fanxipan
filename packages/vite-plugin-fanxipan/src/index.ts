@@ -1,5 +1,5 @@
 import type { Plugin } from "vite";
-import { compile } from "compiler";
+import { compile } from "@fanxipan/compiler";
 import { handleFanxiHotUpdate } from "./hmr.js";
 import type { fanxipanPluginOptions } from "./types.js";
 

@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 describe("fanxipan plugin integration", () => {
   it("uses compiler output with boundary marker and create function", async () => {
     vi.resetModules();
-    vi.doUnmock("compiler");
+    vi.doUnmock("@fanxipan/compiler");
     const { fanxipanPlugin } = await import("./index");
 
     const plugin = fanxipanPlugin({ hmr: true });

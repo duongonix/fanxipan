@@ -3,22 +3,45 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 
 const dryRun = process.argv.includes("--dry-run");
+const skipPreflight = process.argv.includes("--skip-preflight");
 
-const packages = [
-  "runtime",
-  "router",
-  "compiler",
-  "fanxipan-node",
-  "fanxipan",
-  "vite-plugin-fanxipan",
-  "create-fanxipan",
+const publishPlan = [
+  "packages/runtime",
+  "packages/router",
+  "packages/compiler",
+  "packages/fanxipan-node",
+  "packages/fanxipan",
+  "packages/vite-plugin-fanxipan",
+  "packages/create-fanxipan",
 ];
 
-const packageMeta = new Map();
-for (const dir of packages) {
-  const pkgPath = path.join("packages", dir, "package.json");
-  const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
-  packageMeta.set(pkg.name, { dir, pkg });
+function run(command, args, cwd = process.cwd()) {
+  const res = spawnSync(command, args, {
+    cwd,
+    stdio: "inherit",
+    shell: process.platform === "win32",
+    env: { ...process.env, npm_config_cache: path.resolve(".tmp", "npm-cache") },
+  });
+  if (res.status !== 0) {
+    throw new Error(`${command} ${args.join(" ")} failed with code ${res.status}`);
+  }
+}
+
+function loadPackages() {
+  const items = [];
+  for (const relDir of publishPlan) {
+    const pkgPath = path.join(relDir, "package.json");
+    if (!existsSync(pkgPath)) {
+      throw new Error(`Missing package.json: ${pkgPath}`);
+    }
+    const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
+    if (pkg.private) {
+      console.log(`[stable] skip private package ${pkg.name} (${relDir})`);
+      continue;
+    }
+    items.push({ relDir, pkg });
+  }
+  return items;
 }
 
 function rewriteDepsField(obj, field, versionMap) {
@@ -40,16 +63,18 @@ function rewriteDepsField(obj, field, versionMap) {
   }
 }
 
-function run(command, args, cwd = process.cwd()) {
-  const res = spawnSync(command, args, {
-    cwd,
-    stdio: "inherit",
-    shell: process.platform === "win32",
-    env: { ...process.env, npm_config_cache: path.resolve(".tmp", "npm-cache") },
-  });
-  if (res.status !== 0) {
-    throw new Error(`${command} ${args.join(" ")} failed with code ${res.status}`);
-  }
+if (!skipPreflight) {
+  console.log("[stable] running preflight checks...");
+  run("pnpm", ["run", "build:core"]);
+  run("pnpm", ["run", "test:fanxipan"]);
+  run("pnpm", ["run", "check:api-contract"]);
+  run("pnpm", ["run", "release:gate"]);
+}
+
+const packages = loadPackages();
+console.log("[stable] publish order:");
+for (const { pkg } of packages) {
+  console.log(`  - ${pkg.name}@${pkg.version}`);
 }
 
 const tmpRoot = path.join(".tmp", "stable-publish");
@@ -57,35 +82,31 @@ rmSync(tmpRoot, { recursive: true, force: true });
 mkdirSync(tmpRoot, { recursive: true });
 mkdirSync(path.join(".tmp", "npm-cache"), { recursive: true });
 
-const versionMap = new Map();
-for (const [pkgName, meta] of packageMeta.entries()) {
-  versionMap.set(pkgName, meta.pkg.version);
-}
+const versionMap = new Map(packages.map((x) => [x.pkg.name, x.pkg.version]));
 
-for (const [pkgName, meta] of packageMeta.entries()) {
-  const sourceDir = path.join("packages", meta.dir);
-  const targetDir = path.join(tmpRoot, meta.dir);
+for (const { relDir, pkg } of packages) {
+  const sourceDir = relDir;
+  const targetDir = path.join(tmpRoot, relDir.replace(/^packages[\\/]/, ""));
   cpSync(sourceDir, targetDir, {
     recursive: true,
     filter: (src) => !src.includes(`${path.sep}node_modules${path.sep}`),
   });
 
   const pkgPath = path.join(targetDir, "package.json");
-  const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
-  rewriteDepsField(pkg, "dependencies", versionMap);
-  rewriteDepsField(pkg, "devDependencies", versionMap);
-  rewriteDepsField(pkg, "peerDependencies", versionMap);
-  rewriteDepsField(pkg, "optionalDependencies", versionMap);
-  writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`, "utf8");
+  const mutablePkg = JSON.parse(readFileSync(pkgPath, "utf8"));
+  rewriteDepsField(mutablePkg, "dependencies", versionMap);
+  rewriteDepsField(mutablePkg, "devDependencies", versionMap);
+  rewriteDepsField(mutablePkg, "peerDependencies", versionMap);
+  rewriteDepsField(mutablePkg, "optionalDependencies", versionMap);
+  writeFileSync(pkgPath, `${JSON.stringify(mutablePkg, null, 2)}\n`, "utf8");
 
   const args = ["publish", "--tag", "latest", "--access", "public"];
   if (dryRun) args.push("--dry-run");
   else args.push("--provenance");
 
-  if (!existsSync(path.join(targetDir, "package.json"))) {
-    throw new Error(`Missing package.json for ${pkgName} at ${targetDir}`);
-  }
-  console.log(`[stable] publishing ${pkgName}@${pkg.version} (${dryRun ? "dry-run" : "live"})`);
+  console.log(
+    `[stable] publishing ${mutablePkg.name}@${mutablePkg.version} (${dryRun ? "dry-run" : "live"})`,
+  );
   run("npm", args, targetDir);
 }
 

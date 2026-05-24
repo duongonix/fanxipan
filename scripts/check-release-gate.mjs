@@ -21,12 +21,20 @@ if (!changelog.includes(`## ${version}`) && !changelog.includes("## Unreleased")
   process.exit(1);
 }
 
-const pkg = JSON.parse(readFileSync("package.json", "utf8"));
-if (pkg.version !== version) {
+const rootPkg = JSON.parse(readFileSync("package.json", "utf8"));
+const fanxipanPkg = JSON.parse(readFileSync("packages/fanxipan/package.json", "utf8"));
+const rootMatch = rootPkg.version === version;
+const fanxipanMatch = fanxipanPkg.version === version;
+if (!fanxipanMatch) {
   console.error(
-    `[release-gate] Root package version ${pkg.version} does not match tag ${version}.`,
+    `[release-gate] packages/fanxipan version ${fanxipanPkg.version} does not match tag ${version}.`,
   );
   process.exit(1);
+}
+if (!rootMatch) {
+  console.warn(
+    `[release-gate] Root package version ${rootPkg.version} does not match tag ${version}. Continuing because packages/fanxipan matches.`,
+  );
 }
 
 console.log(`[release-gate] Tag ${tag} validated.`);
